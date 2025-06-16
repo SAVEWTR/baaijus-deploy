@@ -90,8 +90,8 @@ class BaaijusPopup {
 
     try {
       const apiBase = await this.getApiBase();
-      console.log('Attempting login to:', `${apiBase}/login`);
-      const response = await fetch(`${apiBase}/login`, {
+      console.log('Attempting login to:', `${apiBase}/auth/login`);
+      const response = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -101,7 +101,8 @@ class BaaijusPopup {
 
       if (response.ok) {
         const data = await response.json();
-        await this.sendMessage({ type: 'SET_TOKEN', token: data.id }); // Using user ID as token
+        console.log('Login successful, user data:', data);
+        await chrome.storage.local.set({ baaijus_token: data.id }); // Store user ID as token
         this.showStatus('Login successful!', 'success');
         setTimeout(() => {
           this.showDashboard();
