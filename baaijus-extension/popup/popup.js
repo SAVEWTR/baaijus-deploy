@@ -90,12 +90,14 @@ class BaaijusPopup {
 
     try {
       const apiBase = await this.getApiBase();
+      console.log('Attempting login to:', `${apiBase}/auth/login`);
       const response = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ username, password })
       });
+      console.log('Login response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
@@ -111,7 +113,8 @@ class BaaijusPopup {
         this.showStatus(error.message || 'Login failed', 'error');
       }
     } catch (error) {
-      this.showStatus('Connection error. Please try again.', 'error');
+      console.error('Login error:', error);
+      this.showStatus(`Connection error: ${error.message}`, 'error');
     }
 
     loginBtn.textContent = 'Sign In';
