@@ -245,18 +245,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve polished extension ZIP download
-  app.get('/baaijus-extension-polished.zip', (req, res) => {
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="baaijus-extension-polished.zip"');
-    
-    const zipPath = path.join(process.cwd(), 'baaijus-extension-polished.zip');
-    res.download(zipPath, 'baaijus-extension-polished.zip', (err) => {
+  // Serve extension ZIP download
+  app.get('/baaijus-extension.zip', (req, res) => {
+    const zipPath = path.join(process.cwd(), 'baaijus-extension.zip');
+    res.download(zipPath, (err) => {
       if (err) {
-        console.error('Download error:', err);
-        if (!res.headersSent) {
-          res.status(404).json({ message: 'Extension file not found' });
-        }
+        res.status(404).json({ message: 'Extension file not found' });
       }
     });
   });
