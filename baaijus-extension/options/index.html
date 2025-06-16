@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Baaijus Extension Options</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f8fafc;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #7059e3, #9c88ff);
+      border-radius: 12px;
+      margin-right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+    }
+    
+    .brand {
+      font-weight: 600;
+      font-size: 24px;
+      color: #1a202c;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 4px;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+    
+    input[type="text"], input[type="url"], select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    input[type="text"]:focus, input[type="url"]:focus, select:focus {
+      outline: none;
+      border-color: #7059e3;
+      box-shadow: 0 0 0 3px rgba(112, 89, 227, 0.1);
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #7059e3, #9c88ff);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(112, 89, 227, 0.3);
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    
+    .status.success {
+      background: #f0fff4;
+      color: #38a169;
+      border: 1px solid #9ae6b4;
+    }
+    
+    .status.error {
+      background: #fed7d7;
+      color: #e53e3e;
+      border: 1px solid #feb2b2;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 4px;
+    }
+    
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: #f7fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 24px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e0;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #7059e3;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">B</div>
+    <div>
+      <div class="brand">Baaijus Extension</div>
+      <div class="tagline">Content Filtering Made Personal</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Server Configuration</div>
+    <div class="form-group">
+      <label for="apiBase">Backend Server URL</label>
+      <input type="url" id="apiBase" placeholder="http://localhost:5000/api">
+      <div class="help-text">URL of your Baaijus backend server. Change this when deploying to production.</div>
+    </div>
+    <button id="saveApiBase" class="btn btn-primary">Save Configuration</button>
+    <div id="apiStatus" class="status" style="display: none;"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Filtering Preferences</div>
+    
+    <div class="toggle-group">
+      <div>
+        <div style="font-weight: 500; color: #1a202c;">Auto-enable on new domains</div>
+        <div style="font-size: 12px; color: #718096;">Automatically apply filtering when visiting new websites</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="autoEnable">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="form-group" style="margin-top: 20px;">
+      <label for="defaultSensitivity">Default Sensitivity Level</label>
+      <select id="defaultSensitivity">
+        <option value="permissive">Permissive - Light highlighting</option>
+        <option value="balanced" selected>Balanced - Blur with click to reveal</option>
+        <option value="strict">Strict - Hide completely</option>
+      </select>
+      <div class="help-text">Default filtering level when no specific Baajus is selected</div>
+    </div>
+
+    <button id="savePreferences" class="btn btn-primary">Save Preferences</button>
+    <div id="prefStatus" class="status" style="display: none;"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">About</div>
+    <p style="color: #4a5568; line-height: 1.6;">
+      <strong>Baaijus Browser Extension v1.0.0</strong><br>
+      Patent Pending Technology<br><br>
+      This extension connects to your Baaijus account to apply personalized content filtering across all websites you visit. 
+      Create and manage your Baajuses (bias profiles) from the main dashboard.
+    </p>
+    <div style="margin-top: 16px;">
+      <a href="#" id="openDashboard" style="color: #7059e3; text-decoration: none; font-weight: 500;">Open Baaijus Dashboard</a>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
