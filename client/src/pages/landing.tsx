@@ -16,7 +16,7 @@ export default function Landing() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Baaijus</h1>
-                <p className="text-xs text-gray-500">AI Content Filtering</p>
+                <p className="text-xs text-gray-500">Content Filtering Made Personal</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -163,7 +163,7 @@ export default function Landing() {
             <span className="text-xl font-bold">Baaijus</span>
           </div>
           <p className="text-gray-400 mb-8">
-            AI-powered content filtering made personal
+            Content filtering made personal
           </p>
           <p className="text-gray-500 text-sm">
             © 2024 Baaijus. All rights reserved.

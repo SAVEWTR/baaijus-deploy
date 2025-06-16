@@ -1,0 +1,90 @@
+
+
+
+also teh footer says ai
+
+ChatGPT said:
+Excellent catch!
+Let’s update both the logo subtitle and footer tagline to remove any “AI” reference.
+
+What to Replace
+1. Logo Subtitle
+Current:
+AI Content Filtering
+
+Replace with one of these (pick your favorite or let me know):
+
+Content Filtering
+
+Content Filtering Made Personal
+
+Personalized Content Filtering
+
+Content You Control
+
+Filtering Made Personal
+
+2. Footer Tagline
+Current:
+AI-powered content filtering made personal
+
+Replace with:
+
+Content filtering made personal
+
+Personalized content filtering, made for you
+
+Content filtering made for everyone
+
+Content you control, made personal
+
+Or just:
+
+Baaijus – Content filtering made personal
+
+How To Update in React
+Logo Area Example:
+jsx
+Copy
+Edit
+<div className="logo-area">
+  <img src="/logo.png" alt="Baaijus Logo" style={{ height: 38, verticalAlign: "middle" }} />
+  <div>
+    <div style={{ fontWeight: 700, fontSize: "1.2em" }}>Baaijus</div>
+    <div style={{ color: "#888", fontSize: "1em" }}>
+      Content Filtering Made Personal
+    </div>
+  </div>
+</div>
+Footer Example:
+jsx
+Copy
+Edit
+<footer style={{ textAlign: "center", background: "#181b30", color: "#ccc", padding: "2em 0" }}>
+  <div>
+    <img src="/logo.png" alt="Baaijus Logo" style={{ height: 32, verticalAlign: "middle" }} />
+    <span style={{ fontWeight: 600, marginLeft: 8, color: "#fff" }}>Baaijus</span>
+  </div>
+  <div style={{ fontSize: "1.1em", margin: "0.7em 0 0.2em 0", color: "#bbb" }}>
+    Content filtering made personal
+  </div>
+  <div style={{ fontSize: "0.95em", color: "#888" }}>
+    &copy; 2024 Baaijus. All rights reserved.
+  </div>
+</footer>
+Final Touch
+Double-check for any “AI” references in meta tags or alt text.
+
+For investor slides, you can always add “Powered by advanced analysis” if needed, but public copy should be timeless and broad.
+
+Copy, paste, and your branding is instantly more universal, premium, and investor/enterprise-ready!
+If you want the exact file/line changed, paste the relevant file and I’ll give you the edit.
+Let me know your final choice of tagline and I’ll write/paste the exact JSX for you!
+
+
+
+
+
+
+
+
