@@ -1,0 +1,563 @@
+BACKEND (/backend directory)
+1. requirements.txt
+txt
+Copy
+Edit
+fastapi
+uvicorn
+sqlalchemy
+asyncpg
+python-dotenv
+passlib[bcrypt]
+python-jose[cryptography]
+2. database.py
+python
+Copy
+Edit
+import os
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+DATABASE_URL = os.environ.get("NEON_DATABASE_URL")
+
+engine = create_async_engine(DATABASE_URL, echo=True)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+Base = declarative_base()
+3. models.py
+python
+Copy
+Edit
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from database import Base
+from datetime import datetime
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    baajus = relationship("Baajus", back_populates="user")
+
+class Baajus(Base):
+    __tablename__ = "baajuses"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String, nullable=False)
+    filter_sensitivity = Column(String, default="balanced")
+    filter_keywords = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User", back_populates="baajus")
+4. auth.py
+python
+Copy
+Edit
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+import os
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE_THIS_TO_A_RANDOM_SECRET")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def decode_access_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+5. crud.py
+python
+Copy
+Edit
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from models import User, Baajus
+from auth import get_password_hash
+
+async def get_user_by_email(session: AsyncSession, email: str):
+    result = await session.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
+
+async def create_user(session: AsyncSession, email: str, password: str, is_admin=False):
+    user = User(
+        email=email,
+        hashed_password=get_password_hash(password),
+        is_admin=is_admin,
+    )
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+async def create_baajus(session: AsyncSession, user_id: int, name: str, sensitivity: str, keywords: str):
+    baajus = Baajus(
+        user_id=user_id,
+        name=name,
+        filter_sensitivity=sensitivity,
+        filter_keywords=keywords
+    )
+    session.add(baajus)
+    await session.commit()
+    await session.refresh(baajus)
+    return baajus
+
+async def get_baajuses_for_user(session: AsyncSession, user_id: int):
+    result = await session.execute(select(Baajus).where(Baajus.user_id == user_id))
+    return result.scalars().all()
+6. main.py
+python
+Copy
+Edit
+from fastapi import FastAPI, HTTPException, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import async_session, engine, Base
+from models import User, Baajus
+from crud import (
+    get_user_by_email, 
+    create_user,
+    create_baajus,
+    get_baajuses_for_user
+)
+from auth import (
+    verify_password,
+    create_access_token,
+    decode_access_token
+)
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Optional
+
+import asyncio
+
+app = FastAPI()
+
+origins = [
+    "*"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
+        yield session
+
+async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)):
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication")
+    user = await get_user_by_email(session, payload.get("sub"))
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user
+
+@app.get("/")
+async def root():
+    return {"message": "Baaijus backend running"}
+
+@app.post("/register/")
+async def register(email: str, password: str, session: AsyncSession = Depends(get_session)):
+    existing = await get_user_by_email(session, email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = await create_user(session, email, password)
+    return {"id": user.id, "email": user.email}
+
+@app.post("/token/")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(get_session)):
+    user = await get_user_by_email(session, form_data.username)
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/profile/")
+async def
+
+
+
+
+
+
+You said:
+bafore you continue, replt i adking nme for a decription of the app
+
+
+ChatGPT said:
+Here’s a concise app description you can use for Replit or any project hosting platform:
+
+App Name:
+Baaijus – Advanced AI Content Filtering & Curation Platform
+
+Description:
+Baaijus is a patent-pending, AI-powered SaaS app for personalized content filtering, curation, and user-driven bias management.
+It lets users create, customize, and monetize their own filtering “Baajuses” (biases), control filter sensitivity, and instantly block unwanted content across platforms.
+Includes full user authentication, admin panel, live demo filter, and robust NeonDB-backed backend.
+Designed for SaaS, enterprise, and influencer/creator monetization, Baaijus is mobile-ready, scalable, and ready for licensing or investment.
+
+Short version (for brief description fields):
+Baaijus is a next-generation AI content filtering and curation app. Users customize their own “Baajuses” (bias profiles), filter content with semantic sensitivity, and monetize or share filters. Admin panel, demo, and NeonDB integration included.
+
+Feel free to copy-paste this into Replit’s description field!
+If you want a super-short “one-liner,” just say so.
+Ready for more code?
+
+
+
+
+
+
+
+You said:
+thank you please continue with the code
+
+
+ChatGPT said:
+Absolutely! Here’s the full backend code continuation, picking up from where main.py was cut off. I’ll then provide the rest of the backend, and then the frontend, so you have a complete, copy-pasteable system for Replit.
+
+main.py (continued)
+python
+Copy
+Edit
+@app.get("/profile/")
+async def profile(user: User = Depends(get_current_user)):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "is_admin": user.is_admin,
+        "created_at": user.created_at,
+    }
+
+@app.post("/baajus/")
+async def add_baajus(
+    name: str, 
+    sensitivity: str = "balanced", 
+    keywords: Optional[str] = "", 
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    new_baajus = await create_baajus(
+        session=session,
+        user_id=user.id,
+        name=name,
+        sensitivity=sensitivity,
+        keywords=keywords or ""
+    )
+    return {
+        "id": new_baajus.id,
+        "name": new_baajus.name,
+        "sensitivity": new_baajus.filter_sensitivity,
+        "keywords": new_baajus.filter_keywords,
+        "created_at": new_baajus.created_at,
+    }
+
+@app.get("/baajus/")
+async def list_baajuses(
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    baajuses = await get_baajuses_for_user(session, user.id)
+    return [
+        {
+            "id": b.id,
+            "name": b.name,
+            "sensitivity": b.filter_sensitivity,
+            "keywords": b.filter_keywords,
+            "created_at": b.created_at,
+        }
+        for b in baajuses
+    ]
+
+@app.post("/filter/")
+async def filter_content(
+    content: str, 
+    baajus_id: int,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    # Simple demo: block if any keyword appears in content, based on Baajus settings
+    baajuses = await get_baajuses_for_user(session, user.id)
+    my_baajus = next((b for b in baajuses if b.id == baajus_id), None)
+    if not my_baajus:
+        raise HTTPException(status_code=404, detail="Baajus profile not found")
+    keywords = (my_baajus.filter_keywords or "").split(",")
+    sensitivity = my_baajus.filter_sensitivity or "balanced"
+    blocked = any(kw.strip().lower() in content.lower() for kw in keywords if kw.strip())
+    return {
+        "filtered": blocked,
+        "sensitivity": sensitivity,
+        "matched_keywords": [kw for kw in keywords if kw.strip() and kw.strip().lower() in content.lower()]
+    }
+
+@app.get("/admin/users/")
+async def admin_users(
+    user: User = Depends(get_current_user), 
+    session: AsyncSession = Depends(get_session)
+):
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admins only")
+    result = await session.execute(select(User))
+    users = result.scalars().all()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "is_admin": u.is_admin,
+            "created_at": u.created_at
+        }
+        for u in users
+    ]
+
+@app.get("/admin/baajuses/")
+async def admin_baajuses(
+    user: User = Depends(get_current_user), 
+    session: AsyncSession = Depends(get_session)
+):
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admins only")
+    result = await session.execute(select(Baajus))
+    baajuses = result.scalars().all()
+    return [
+        {
+            "id": b.id,
+            "user_id": b.user_id,
+            "name": b.name,
+            "sensitivity": b.filter_sensitivity,
+            "keywords": b.filter_keywords,
+            "created_at": b.created_at
+        }
+        for b in baajuses
+    ]
+Backend Summary
+/requirements.txt – Python dependencies
+
+/database.py – DB connection & session
+
+/models.py – User/Baajus models
+
+/auth.py – Password hashing, JWT
+
+/crud.py – DB operations
+
+/main.py – FastAPI endpoints
+
+Backend setup:
+
+Place all these files in a /backend folder in Replit.
+
+Run pip install -r requirements.txt (in the /backend folder).
+
+Run:
+
+bash
+Copy
+Edit
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+Make sure your Replit Vault has NEON_DATABASE_URL and (optional but recommended) SECRET_KEY.
+
+Frontend (React, /frontend directory)
+You can use Vite, Create React App, or Replit’s own React template.
+Below is a simple, modern Vite-style structure (can be easily ported):
+
+1. package.json
+json
+Copy
+Edit
+{
+  "name": "baaijus-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.0.0"
+  }
+}
+2. vite.config.js
+js
+Copy
+Edit
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:8000'
+    }
+  }
+});
+3. src/api.js
+js
+Copy
+Edit
+import axios from 'axios';
+
+const API_BASE = '/api';
+
+export const register = (email, password) =>
+  axios.post(`${API_BASE}/register/`, null, { params: { email, password } });
+
+export const login = (email, password) =>
+  axios.post(
+    `${API_BASE}/token/`,
+    new URLSearchParams({ username: email, password }),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+
+export const getProfile = token =>
+  axios.get(`${API_BASE}/profile/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+export const addBaajus = (token, name, sensitivity, keywords) =>
+  axios.post(
+    `${API_BASE}/baajus/`,
+    null,
+    {
+      params: { name, sensitivity, keywords },
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+export const getBaajuses = token =>
+  axios.get(`${API_BASE}/baajus/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+export const filterContent = (token, baajus_id, content) =>
+  axios.post(
+    `${API_BASE}/filter/`,
+    null,
+    {
+      params: { baajus_id, content },
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+// Add admin calls as needed...
+4. src/App.js
+(High-level app shell and routing)
+
+jsx
+Copy
+Edit
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import Dashboard from "./pages/Dashboard";
+import AdminPanel from "./pages/AdminPanel";
+import FilterDemo from "./pages/FilterDemo";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/filter-demo" element={<FilterDemo />} />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+5. src/pages/LoginPage.js
+jsx
+Copy
+Edit
+import React, { useState } from "react";
+import { login } from "../api";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async e => {
+    e.preventDefault();
+    setError("");
+    try {
+      const { data } = await login(email, pw);
+      localStorage.setItem("token", data.access_token);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setError("Login failed. Check credentials.");
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={pw}
+          onChange={e => setPw(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
+      </form>
+      <div style={{ color: "red" }}>{error}</div>
+      <a href="/register">Register</a>
+    </div>
+  );
+}
