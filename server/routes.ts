@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { analyzeContent, generateBaajusDescription } from "./openai";
 import { insertBaajusSchema, insertFilterResultSchema } from "@shared/schema";
 import { z } from "zod";
@@ -13,9 +13,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const user = req.user;
+      res.json({ 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -25,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Baajus routes
   app.get("/api/baajuses", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const baajuses = await storage.getBaajusesByUserId(userId);
       res.json(baajuses);
     } catch (error) {
@@ -36,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/baajuses", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const baajusData = insertBaajusSchema.parse({
         ...req.body,
         userId,
@@ -62,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/baajuses/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const baajusId = parseInt(req.params.id);
       
       // Check if user owns this baajus
@@ -82,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/baajuses/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const baajusId = parseInt(req.params.id);
       
       // Check if user owns this baajus
@@ -102,7 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Content filtering route
   app.post("/api/filter", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { content, baajusId } = req.body;
 
       if (!content || !baajusId) {
@@ -165,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User stats route
   app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
@@ -177,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Filter results history
   app.get("/api/filter-results", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const limit = parseInt(req.query.limit as string) || 50;
       const results = await storage.getFilterResultsByUserId(userId, limit);
       res.json(results);
