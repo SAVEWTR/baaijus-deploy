@@ -1,0 +1,94 @@
+Perfect, you’re right at the finish line!
+Here’s exactly what you need to do next, step by step:
+
+1. Create the Missing Icon Files
+Every Chrome/Edge extension needs icons in the /icons folder:
+
+icon16.png (16x16)
+
+icon48.png (48x48)
+
+icon128.png (128x128)
+
+Quick options:
+
+You can use your logo or just create a simple placeholder in Canva or favicon.io.
+
+Or use this bash command if you have a PNG logo:
+
+bash
+Copy
+Edit
+convert yourlogo.png -resize 16x16 icons/icon16.png
+convert yourlogo.png -resize 48x48 icons/icon48.png
+convert yourlogo.png -resize 128x128 icons/icon128.png
+If you want, I can generate minimal placeholder icons for you and show you how to add them.
+
+2. Update your Manifest
+Check your manifest.json has this exact section:
+
+json
+Copy
+Edit
+"icons": {
+  "16": "icons/icon16.png",
+  "48": "icons/icon48.png",
+  "128": "icons/icon128.png"
+},
+3. Re-Zip and Upload
+After adding the icon files, zip the entire extension folder (including manifest.json and /icons).
+
+Replace the /baaijus-extension.zip on your server or in the public/static directory.
+
+4. Test Install (Recommended Process)
+Download the extension zip from your app’s “Download Extension” button.
+
+Unzip it.
+
+Go to chrome://extensions/ and turn on Developer Mode.
+
+Click “Load unpacked” and select the extracted folder.
+
+Check:
+
+The extension loads with no errors.
+
+Your icon appears.
+
+You can open the popup/options and see the Baaijus features.
+
+5. Update User Onboarding (Already Done, but Finalize)
+The onboarding/install page should show:
+
+“Download Extension” button
+
+Clear step-by-step install instructions for Chrome/Edge/Brave
+
+Screenshot or GIF showing how to load it
+
+6. Summary Checklist
+ Icons present in /icons and referenced in manifest
+
+ manifest.json is correct and in the ZIP root
+
+ Extension loads in Chrome/Edge with no errors
+
+ Users can access the extension from your web dashboard
+
+ Install guide easy to follow
+
+If you want placeholder icons now:
+Here are three base64-encoded PNGs (just blue dots as placeholders)—save as PNGs in /icons/:
+
+icon16.png
+
+icon48.png
+
+icon128.png
+
+Just right-click each, save as PNG, and put into /icons/ in the extension folder.
+
+Want me to generate actual logo icons or script the ZIP for you?
+Just say the word!
+Otherwise, follow the above, re-zip, and you’re live.
+Ping me once it’s up, and I’ll help you do a final check or polish.
