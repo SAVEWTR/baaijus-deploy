@@ -90,6 +90,19 @@ class BaaijusPopup {
 
     try {
       const apiBase = await this.getApiBase();
+      console.log('API Base:', apiBase);
+      
+      // First test basic connectivity
+      try {
+        const testResponse = await fetch(`${apiBase}/test`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        console.log('Test endpoint response:', testResponse.status, await testResponse.text());
+      } catch (testError) {
+        console.error('Test endpoint failed:', testError);
+      }
+      
       console.log('Attempting login to:', `${apiBase}/auth/login`);
       const response = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
@@ -98,6 +111,7 @@ class BaaijusPopup {
         body: JSON.stringify({ username, password })
       });
       console.log('Login response status:', response.status);
+      console.log('Login response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const data = await response.json();

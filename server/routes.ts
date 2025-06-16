@@ -12,6 +12,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Test endpoint for extension debugging
+  app.get('/api/test', (req, res) => {
+    res.json({ status: 'ok', message: 'Extension can reach the API' });
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
