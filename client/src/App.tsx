@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import Baajuses from "@/pages/baajuses";
 import Demo from "@/pages/demo";
@@ -18,9 +20,12 @@ function Router() {
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
+      {/* Authentication routes */}
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      
+      {/* Protected routes */}
+      {isAuthenticated ? (
         <Layout>
           <Route path="/" component={Dashboard} />
           <Route path="/baajuses" component={Baajuses} />
@@ -28,7 +33,10 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
         </Layout>
-      )}
+      ) : !isLoading ? (
+        <Route path="/" component={Landing} />
+      ) : null}
+      
       <Route component={NotFound} />
     </Switch>
   );
