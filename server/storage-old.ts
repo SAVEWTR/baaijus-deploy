@@ -40,21 +40,23 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
-  async getUser(id: number): Promise<User | undefined> {
+  // User operations (mandatory for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
-  }
-
-  async createUser(userData: InsertUser): Promise<User> {
+  async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
       .returning();
     return user;
   }
@@ -68,12 +70,12 @@ export class DatabaseStorage implements IStorage {
     return baajus;
   }
 
-  async getBaajusesByUserId(userId: number): Promise<Baajus[]> {
+  async getBaajusesByUserId(userId: string): Promise<Baajus[]> {
     return await db
       .select()
       .from(baajuses)
       .where(eq(baajuses.userId, userId))
-      .orderBy(desc(baajuses.createdAt));
+      .orderBy(desc(baajuses.updatedAt));
   }
 
   async getBaajusById(id: number): Promise<Baajus | undefined> {
@@ -87,10 +89,7 @@ export class DatabaseStorage implements IStorage {
   async updateBaajus(id: number, updates: Partial<InsertBaajus>): Promise<Baajus> {
     const [baajus] = await db
       .update(baajuses)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(baajuses.id, id))
       .returning();
     return baajus;
@@ -105,16 +104,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(baajuses)
       .where(eq(baajuses.isPublic, true))
-      .orderBy(desc(baajuses.usageCount))
-      .limit(50);
+      .orderBy(desc(baajuses.usageCount));
   }
 
   async updateBaajusUsage(id: number): Promise<void> {
     await db
       .update(baajuses)
-      .set({
+      .set({ 
         usageCount: sql`${baajuses.usageCount} + 1`,
-        updatedAt: new Date(),
+        updatedAt: new Date()
       })
       .where(eq(baajuses.id, id));
   }
@@ -128,7 +126,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getFilterResultsByUserId(userId: number, limit = 50): Promise<FilterResult[]> {
+  async getFilterResultsByUserId(userId: string, limit = 50): Promise<FilterResult[]> {
     return await db
       .select()
       .from(filterResults)
@@ -137,32 +135,38 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
-  async getUserStats(userId: number): Promise<{
+  async getUserStats(userId: string): Promise<{
     activeBaajuses: number;
     contentFiltered: number;
     averageAccuracy: number;
     totalRevenue: number;
   }> {
-    const [baajusStats] = await db
-      .select({
-        count: count(baajuses.id),
-      })
+    // Get active baajuses count
+    const [activeBaajusesResult] = await db
+      .select({ count: count() })
       .from(baajuses)
-      .where(eq(baajuses.userId, userId));
+      .where(and(eq(baajuses.userId, userId), eq(baajuses.isActive, true)));
 
-    const [filterStats] = await db
-      .select({
-        count: count(filterResults.id),
-        avgConfidence: avg(filterResults.confidence),
-      })
+    // Get content filtered count
+    const [contentFilteredResult] = await db
+      .select({ count: count() })
       .from(filterResults)
       .where(eq(filterResults.userId, userId));
 
+    // Get average accuracy
+    const [accuracyResult] = await db
+      .select({ avgAccuracy: avg(baajuses.accuracyRate) })
+      .from(baajuses)
+      .where(eq(baajuses.userId, userId));
+
+    // Calculate estimated revenue (mock calculation)
+    const revenue = Math.floor((contentFilteredResult.count || 0) * 0.001 * 100) / 100;
+
     return {
-      activeBaajuses: baajusStats?.count || 0,
-      contentFiltered: filterStats?.count || 0,
-      averageAccuracy: Number(filterStats?.avgConfidence || 0),
-      totalRevenue: 0, // Placeholder for future monetization features
+      activeBaajuses: activeBaajusesResult.count || 0,
+      contentFiltered: contentFilteredResult.count || 0,
+      averageAccuracy: Number(accuracyResult.avgAccuracy) || 0,
+      totalRevenue: revenue,
     };
   }
 }

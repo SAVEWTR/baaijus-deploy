@@ -44,7 +44,7 @@ export const users = pgTable("users", {
 // Baajuses (bias profiles) table
 export const baajuses = pgTable("baajuses", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(),
   description: text("description"),
   sensitivity: varchar("sensitivity").notNull().default("balanced"), // permissive, balanced, strict
@@ -60,7 +60,7 @@ export const baajuses = pgTable("baajuses", {
 // Filter results table
 export const filterResults = pgTable("filter_results", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   baajusId: integer("baajus_id").notNull().references(() => baajuses.id),
   content: text("content").notNull(),
   isBlocked: boolean("is_blocked").notNull(),
@@ -110,7 +110,7 @@ export const insertFilterResultSchema = createInsertSchema(filterResults).omit({
 });
 
 // Types
-export type UpsertUser = typeof users.$inferInsert;
+export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertBaajus = z.infer<typeof insertBaajusSchema>;
 export type Baajus = typeof baajuses.$inferSelect;
