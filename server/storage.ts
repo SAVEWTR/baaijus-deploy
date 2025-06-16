@@ -10,7 +10,7 @@ import {
   type FilterResult,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, count, avg } from "drizzle-orm";
+import { eq, desc, and, count, avg, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
