@@ -120,8 +120,6 @@ class BaaijusPopup {
         this.showStatus('Login successful!', 'success');
         setTimeout(() => {
           this.showDashboard();
-          // Show connection status when authenticated
-          document.getElementById('connectionStatus').style.display = 'flex';
         }, 1000);
       } else {
         const errorText = await response.text();

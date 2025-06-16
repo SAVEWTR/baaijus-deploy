@@ -30,37 +30,7 @@ const pageData = {
 export default function Topbar() {
   const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [extensionConnected, setExtensionConnected] = useState(false);
 
-  useEffect(() => {
-    // Check for extension connection
-    const checkExtension = () => {
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'BAAIJUS_EXTENSION_PING') {
-          setExtensionConnected(true);
-        }
-      };
-
-      window.addEventListener('message', handleMessage);
-      window.postMessage({ type: 'BAAIJUS_WEB_PING' }, '*');
-      
-      // Reset connection status after 2 seconds if no response
-      setTimeout(() => {
-        window.removeEventListener('message', handleMessage);
-      }, 2000);
-
-      return () => window.removeEventListener('message', handleMessage);
-    };
-
-    const interval = setInterval(() => {
-      setExtensionConnected(false);
-      checkExtension();
-    }, 5000);
-    
-    checkExtension(); // Initial check
-
-    return () => clearInterval(interval);
-  }, []);
 
   const currentPage = pageData[location as keyof typeof pageData] || pageData["/"];
 
@@ -85,16 +55,7 @@ export default function Topbar() {
             <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
           </div>
           
-          {/* Extension Status */}
-          <div className="flex items-center space-x-2 px-3 py-1 rounded-lg bg-gray-50">
-            <Chrome className="w-4 h-4 text-gray-400" />
-            <div className="flex items-center space-x-1">
-              <div className={`w-2 h-2 rounded-full ${extensionConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-              <span className="text-xs font-medium text-gray-600">
-                {extensionConnected ? 'Extension Connected' : 'Extension Offline'}
-              </span>
-            </div>
-          </div>
+
 
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
