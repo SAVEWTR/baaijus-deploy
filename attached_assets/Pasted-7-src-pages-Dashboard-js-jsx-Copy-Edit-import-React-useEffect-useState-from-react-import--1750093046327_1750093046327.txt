@@ -1,0 +1,80 @@
+7. src/pages/Dashboard.js
+jsx
+Copy
+Edit
+import React, { useEffect, useState } from "react";
+import { getProfile, addBaajus, getBaajuses } from "../api";
+
+export default function Dashboard() {
+  const [profile, setProfile] = useState(null);
+  const [baajuses, setBaajuses] = useState([]);
+  const [name, setName] = useState("");
+  const [sens, setSens] = useState("balanced");
+  const [keywords, setKeywords] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login";
+    getProfile(token).then(({ data }) => setProfile(data));
+    getBaajuses(token).then(({ data }) => setBaajuses(data));
+  }, []);
+
+  const handleAdd = async e => {
+    e.preventDefault();
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      await addBaajus(token, name, sens, keywords);
+      setName("");
+      setKeywords("");
+      getBaajuses(token).then(({ data }) => setBaajuses(data));
+    } catch {
+      setError("Failed to add Baajus.");
+    }
+  };
+
+  return (
+    <div>
+      <h2>Dashboard</h2>
+      {profile && (
+        <div>
+          <div>Email: {profile.email}</div>
+          <div>User ID: {profile.id}</div>
+        </div>
+      )}
+      <h3>Create New Baajus</h3>
+      <form onSubmit={handleAdd}>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Baajus name"
+          required
+        />
+        <select value={sens} onChange={e => setSens(e.target.value)}>
+          <option value="light">Light</option>
+          <option value="balanced">Balanced</option>
+          <option value="strict">Strict</option>
+        </select>
+        <input
+          value={keywords}
+          onChange={e => setKeywords(e.target.value)}
+          placeholder="Comma-separated keywords"
+        />
+        <button type="submit">Add Baajus</button>
+      </form>
+      <div style={{ color: "red" }}>{error}</div>
+      <h3>Your Baajuses</h3>
+      <ul>
+        {baajuses.map(b => (
+          <li key={b.id}>
+            <strong>{b.name}</strong> ({b.sensitivity}) – {b.keywords}
+          </li>
+        ))}
+      </ul>
+      <a href="/filter-demo">Try Filter Demo</a>
+      {profile && profile.is_admin && <a href="/admin">Go to Admin Panel</a>}
+      <button onClick={() => { localStorage.clear(); window.location.href = "/login"; }}>Logout</button>
+    </div>
+  );
+}
