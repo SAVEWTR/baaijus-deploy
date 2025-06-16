@@ -426,6 +426,15 @@ export default function Dashboard() {
                       Create New Baajus
                     </Button>
                     
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setLocation("/extension")}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Install Extension
+                    </Button>
+                    
                     <Button variant="outline" className="w-full">
                       <Upload className="w-4 h-4 mr-2" />
                       Import Filter Set

@@ -45,7 +45,7 @@ The application follows a full-stack architecture with the following components:
 - **Design System**: shadcn/ui components with Tailwind CSS
 - **Theme**: New York style with neutral color scheme
 - **Responsive**: Mobile-first design approach
-- **Key Pages**: Dashboard, Baajuses management, Live demo, Analytics, Settings
+- **Key Pages**: Dashboard, Baajuses management, Live demo, Browser Extension, Analytics, Settings
 
 ### Core Entities
 - **Baajuses**: Custom bias profiles with name, description, sensitivity, keywords, and usage tracking
@@ -98,6 +98,21 @@ The application follows a full-stack architecture with the following components:
 - `SESSION_SECRET`: For session encryption
 - `REPLIT_DOMAINS`: Required for Replit Auth
 
+## Browser Extension System
+
+### Extension Download & Onboarding
+- **Download Page**: `/extension` route provides comprehensive installation instructions
+- **ZIP Distribution**: Extension packaged as downloadable ZIP file at `/baaijus-extension.zip`
+- **Installation Guide**: Step-by-step browser installation with visual instructions
+- **Compatibility**: Chrome, Edge, Brave browsers with Manifest V3 support
+- **Navigation Integration**: Extension link added to sidebar and dashboard quick actions
+
+### Extension Features
+- **Real-time Filtering**: Content analysis on any website using user's Baajuses
+- **One-click Toggle**: Enable/disable filtering with browser toolbar button
+- **Settings Sync**: Baajuses automatically sync across devices via API
+- **User Authentication**: Secure login integration with main platform
+
 ## Changelog
 
 ```
@@ -110,6 +125,7 @@ Changelog:
 - June 16, 2025. Created complete browser extension with Manifest V3 for Chrome/Edge
 - June 16, 2025. Comprehensive testing completed - all authentication, filtering, and API endpoints verified
 - June 16, 2025. Platform ready for production deployment with test credentials and sample data
+- June 16, 2025. Added browser extension download and onboarding system with comprehensive installation guide
 ```
 
 ## User Preferences
