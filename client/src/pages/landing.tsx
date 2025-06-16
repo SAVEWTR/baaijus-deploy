@@ -80,53 +80,53 @@ export default function Landing() {
                 </CardDescription>
               </CardHeader>
             </Card>
-
+            
             <Card>
               <CardHeader>
-                <Shield className="w-12 h-12 text-secondary mb-4" />
-                <CardTitle>AI-Powered</CardTitle>
+                <Shield className="w-12 h-12 text-primary mb-4" />
+                <CardTitle>AI-Powered Analysis</CardTitle>
                 <CardDescription>
-                  Advanced semantic analysis using OpenAI for accurate content understanding
+                  Advanced semantic understanding goes beyond simple keyword matching
                 </CardDescription>
               </CardHeader>
             </Card>
-
+            
             <Card>
               <CardHeader>
-                <Zap className="w-12 h-12 text-accent mb-4" />
+                <Zap className="w-12 h-12 text-primary mb-4" />
                 <CardTitle>Real-time Filtering</CardTitle>
                 <CardDescription>
-                  Instant content analysis with adjustable sensitivity levels
+                  Instant content analysis with configurable sensitivity levels
                 </CardDescription>
               </CardHeader>
             </Card>
-
+            
             <Card>
               <CardHeader>
-                <Users className="w-12 h-12 text-success mb-4" />
-                <CardTitle>Share & Collaborate</CardTitle>
+                <Users className="w-12 h-12 text-primary mb-4" />
+                <CardTitle>Collaborative Filters</CardTitle>
                 <CardDescription>
-                  Share your filter profiles with others or use community-created filters
+                  Share and discover community-created Baajuses for different use cases
                 </CardDescription>
               </CardHeader>
             </Card>
-
+            
             <Card>
               <CardHeader>
-                <BarChart3 className="w-12 h-12 text-warning mb-4" />
+                <BarChart3 className="w-12 h-12 text-primary mb-4" />
                 <CardTitle>Analytics Dashboard</CardTitle>
                 <CardDescription>
-                  Track filtering performance and accuracy with detailed analytics
+                  Track filter performance and content analysis insights
                 </CardDescription>
               </CardHeader>
             </Card>
-
+            
             <Card>
               <CardHeader>
-                <Settings className="w-12 h-12 text-error mb-4" />
-                <CardTitle>Full Control</CardTitle>
+                <Settings className="w-12 h-12 text-primary mb-4" />
+                <CardTitle>Fine-grained Control</CardTitle>
                 <CardDescription>
-                  Fine-tune every aspect of your content filtering experience
+                  Adjust bias detection sensitivity from permissive to strict
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -140,31 +140,32 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-white mb-6">
             Ready to Take Control of Your Content?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of users who are already filtering content their way
+          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            Join thousands of users who are already using Baaijus to create personalized, intelligent content filters.
           </p>
-          <Button 
-            size="lg"
-            variant="secondary"
-            onClick={() => window.location.href = '/api/login'}
-          >
-            Get Started Free
-          </Button>
+          <Link href="/register">
+            <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-gray-100">
+              Get Started for Free
+            </Button>
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-semibold">Baaijus</span>
+        <div className="container mx-auto px-6 text-center">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+              <Brain className="w-5 h-5 text-white" />
             </div>
-            <p className="text-gray-400">© 2025 Baaijus. All rights reserved.</p>
+            <span className="text-xl font-bold">Baaijus</span>
           </div>
+          <p className="text-gray-400 mb-8">
+            AI-powered content filtering made personal
+          </p>
+          <p className="text-gray-500 text-sm">
+            © 2024 Baaijus. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
