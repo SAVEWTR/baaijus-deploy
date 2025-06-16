@@ -247,15 +247,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve polished extension ZIP download
   app.get('/baaijus-extension-polished.zip', (req, res) => {
-    const zipPath = path.join(__dirname, '..', 'baaijus-extension-polished.zip');
-    
-    if (!fs.existsSync(zipPath)) {
-      return res.status(404).json({ message: 'Extension file not found' });
-    }
-    
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', 'attachment; filename="baaijus-extension-polished.zip"');
-    res.sendFile(zipPath);
+    
+    const zipPath = path.join(process.cwd(), 'baaijus-extension-polished.zip');
+    res.download(zipPath, 'baaijus-extension-polished.zip', (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        if (!res.headersSent) {
+          res.status(404).json({ message: 'Extension file not found' });
+        }
+      }
+    });
   });
 
   const httpServer = createServer(app);
