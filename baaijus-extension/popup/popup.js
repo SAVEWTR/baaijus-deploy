@@ -100,7 +100,11 @@ class BaaijusPopup {
         const data = await response.json();
         await this.sendMessage({ type: 'SET_TOKEN', token: data.id }); // Using user ID as token
         this.showStatus('Login successful!', 'success');
-        setTimeout(() => this.showDashboard(), 1000);
+        setTimeout(() => {
+          this.showDashboard();
+          // Show connection status when authenticated
+          document.getElementById('connectionStatus').style.display = 'flex';
+        }, 1000);
       } else {
         const error = await response.json();
         this.showStatus(error.message || 'Login failed', 'error');
