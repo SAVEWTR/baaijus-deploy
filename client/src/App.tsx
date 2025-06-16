@@ -31,14 +31,24 @@ function Router() {
 
   return (
     <Switch>
-      {/* Authentication routes */}
+      {/* Authentication routes - always available */}
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       
-      {/* Protected routes */}
-      {isAuthenticated ? (
+      {/* Root route - handle based on auth state */}
+      <Route path="/">
+        {isAuthenticated ? (
+          <Layout>
+            <Dashboard />
+          </Layout>
+        ) : (
+          <Landing />
+        )}
+      </Route>
+      
+      {/* Protected routes - only show if authenticated */}
+      {isAuthenticated && (
         <Layout>
-          <Route path="/" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/baajuses" component={Baajuses} />
           <Route path="/demo" component={Demo} />
@@ -46,11 +56,10 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
         </Layout>
-      ) : (
-        <Route path="/" component={Landing} />
       )}
       
-      <Route component={NotFound} />
+      {/* 404 - only if not authenticated routes */}
+      {!isAuthenticated && <Route component={NotFound} />}
     </Switch>
   );
 }
