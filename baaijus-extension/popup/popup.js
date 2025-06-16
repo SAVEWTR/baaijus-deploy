@@ -124,12 +124,29 @@ class BaaijusPopup {
           document.getElementById('connectionStatus').style.display = 'flex';
         }, 1000);
       } else {
-        const error = await response.json();
-        this.showStatus(error.message || 'Login failed', 'error');
+        const errorText = await response.text();
+        console.error('Login failed - Status:', response.status, 'Response:', errorText);
+        try {
+          const error = JSON.parse(errorText);
+          this.showStatus(error.message || 'Login failed', 'error');
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          this.showStatus(`Login failed: ${response.status} - ${errorText}`, 'error');
+        }
       }
     } catch (error) {
-      console.error('Login error:', error);
-      this.showStatus(`Connection error: ${error.message}`, 'error');
+      console.error('Login error details:', {
+        error: error,
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        this.showStatus('Network error: Cannot reach server. Check CORS/permissions.', 'error');
+      } else {
+        this.showStatus(`Connection error: ${error.message}`, 'error');
+      }
     }
 
     loginBtn.textContent = 'Sign In';
