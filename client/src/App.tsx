@@ -20,7 +20,6 @@ import Layout from "@/components/layout";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading spinner during auth check
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -29,7 +28,6 @@ function Router() {
     );
   }
 
-  // If authenticated, show app layout with routes
   if (isAuthenticated) {
     return (
       <Layout>
@@ -41,19 +39,22 @@ function Router() {
           <Route path="/extension" component={Extension} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
-          <Route component={NotFound} />
+          <Route>
+            <NotFound />
+          </Route>
         </Switch>
       </Layout>
     );
   }
 
-  // If not authenticated, show public routes
   return (
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/" component={Landing} />
-      <Route component={NotFound} />
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
 }

@@ -27,7 +27,7 @@ class BaaijusPopup {
 
   async getApiBase() {
     const { apiBase } = await this.getStorage(['apiBase']);
-    return apiBase || 'https://baaijus-filter.replit.app/api';
+    return apiBase || 'https://baaijus-filter-email6068.replit.app/api';
   }
 
   setupEventListeners() {
@@ -46,7 +46,7 @@ class BaaijusPopup {
     
     document.getElementById('openDashboard').addEventListener('click', async () => {
       const apiBase = await this.getApiBase();
-      const dashboardUrl = apiBase.replace('/api', '');
+      const dashboardUrl = apiBase.replace('/api', '/');
       chrome.tabs.create({ url: dashboardUrl });
     });
   }
