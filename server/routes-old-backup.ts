@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Baaijus routes
+  // Baajus routes
   app.get("/api/baaijuses", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -40,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/baaijuses", isAuthenticated, async (req: any, res) => {
+  app.post("/api/baajuses", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const baaijusData = insertBaaijusSchema.parse({
@@ -48,60 +48,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
       });
 
-      // Auto-generate description if not provided and keywords exist
-      if (!baaijusData.description && baaijusData.keywords) {
-        const keywordArray = baaijusData.keywords.split(',').map((k: string) => k.trim());
-        baaijusData.description = await generateBaajusDescription(baaijusData.name, keywordArray);
+      // Generate description if not provided
+      if (!baajusData.description && baajusData.keywords) {
+        const keywords = baajusData.keywords.split(',').map(k => k.trim()).filter(Boolean);
+        baajusData.description = await generateBaajusDescription(baajusData.name, keywords);
       }
 
-      const baaijus = await storage.createBaaijus(baaijusData);
-      res.json(baaijus);
+      const baajus = await storage.createBaajus(baajusData);
+      res.json(baajus);
     } catch (error) {
-      console.error("Error creating baaijus:", error);
+      console.error("Error creating baajus:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid input", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to create baaijus" });
+        res.status(500).json({ message: "Failed to create baajus" });
       }
     }
   });
 
-  app.put("/api/baaijuses/:id", isAuthenticated, async (req: any, res) => {
+  app.put("/api/baajuses/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const baaijusId = parseInt(req.params.id);
+      const baajusId = parseInt(req.params.id);
       
-      // Check if user owns this baaijus
-      const existingBaaijus = await storage.getBaaijusById(baaijusId);
-      if (!existingBaaijus || existingBaaijus.userId !== userId) {
-        return res.status(404).json({ message: "Baaijus not found" });
+      // Check if user owns this baajus
+      const existingBaajus = await storage.getBaajusById(baajusId);
+      if (!existingBaajus || existingBaajus.userId !== userId) {
+        return res.status(404).json({ message: "Baajus not found" });
       }
 
-      const updates = insertBaaijusSchema.partial().parse(req.body);
-      const updatedBaaijus = await storage.updateBaaijus(baaijusId, updates);
-      res.json(updatedBaaijus);
+      const updates = insertBaajusSchema.partial().parse(req.body);
+      const updatedBaajus = await storage.updateBaajus(baajusId, updates);
+      res.json(updatedBaajus);
     } catch (error) {
-      console.error("Error updating baaijus:", error);
-      res.status(500).json({ message: "Failed to update baaijus" });
+      console.error("Error updating baajus:", error);
+      res.status(500).json({ message: "Failed to update baajus" });
     }
   });
 
-  app.delete("/api/baaijuses/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/baajuses/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const baaijusId = parseInt(req.params.id);
+      const baajusId = parseInt(req.params.id);
       
-      // Check if user owns this baaijus
-      const existingBaaijus = await storage.getBaaijusById(baaijusId);
-      if (!existingBaaijus || existingBaaijus.userId !== userId) {
-        return res.status(404).json({ message: "Baaijus not found" });
+      // Check if user owns this baajus
+      const existingBaajus = await storage.getBaajusById(baajusId);
+      if (!existingBaajus || existingBaajus.userId !== userId) {
+        return res.status(404).json({ message: "Baajus not found" });
       }
 
-      await storage.deleteBaaijus(baaijusId);
-      res.json({ message: "Baaijus deleted successfully" });
+      await storage.deleteBaajus(baajusId);
+      res.json({ message: "Baajus deleted successfully" });
     } catch (error) {
-      console.error("Error deleting baaijus:", error);
-      res.status(500).json({ message: "Failed to delete baaijus" });
+      console.error("Error deleting baajus:", error);
+      res.status(500).json({ message: "Failed to delete baajus" });
     }
   });
 
@@ -109,28 +109,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/filter", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const { content, baaijusId } = req.body;
+      const { content, baajusId } = req.body;
 
-      if (!content || !baaijusId) {
-        return res.status(400).json({ message: "Content and baaijusId are required" });
+      if (!content || !baajusId) {
+        return res.status(400).json({ message: "Content and baajusId are required" });
       }
 
-      // Get the baaijus
-      const baaijus = await storage.getBaaijusById(baaijusId);
-      if (!baaijus || baaijus.userId !== userId) {
-        return res.status(404).json({ message: "Baaijus not found" });
+      // Get the baajus
+      const baajus = await storage.getBaajusById(baajusId);
+      if (!baajus || baajus.userId !== userId) {
+        return res.status(404).json({ message: "Baajus not found" });
       }
 
       // Parse keywords
-      const keywords = baaijus.keywords ? baaijus.keywords.split(',').map((k: string) => k.trim()) : [];
+      const keywords = baajus.keywords 
+        ? baajus.keywords.split(',').map(k => k.trim()).filter(Boolean)
+        : [];
 
-      // Analyze content
-      const analysis = await analyzeContent(content, keywords, baaijus.sensitivity as any);
+      // Analyze content with OpenAI
+      const analysis = await analyzeContent(
+        content,
+        keywords,
+        baajus.sensitivity as "permissive" | "balanced" | "strict"
+      );
 
-      // Store filter result
+      // Save filter result
       const filterResult = await storage.createFilterResult({
         userId,
-        baaijusId,
+        baajusId,
         content,
         isBlocked: analysis.isBlocked,
         confidence: analysis.confidence,
@@ -138,8 +144,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         matchedKeywords: JSON.stringify(analysis.matchedKeywords),
       });
 
-      // Update usage count
-      await storage.updateBaaijusUsage(baaijusId);
+      // Update baajus usage
+      await storage.updateBaajusUsage(baajusId);
 
       res.json({
         ...analysis,
@@ -151,30 +157,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public baaijuses route
-  app.get("/api/public/baaijuses", async (req, res) => {
+  // Get public baajuses
+  app.get("/api/baajuses/public", async (req, res) => {
     try {
-      const publicBaaijuses = await storage.getPublicBaaijuses();
-      res.json(publicBaaijuses);
+      const publicBaajuses = await storage.getPublicBaajuses();
+      res.json(publicBaajuses);
     } catch (error) {
-      console.error("Error fetching public baaijuses:", error);
-      res.status(500).json({ message: "Failed to fetch public baaijuses" });
+      console.error("Error fetching public baajuses:", error);
+      res.status(500).json({ message: "Failed to fetch public baajuses" });
     }
   });
 
   // User stats route
-  app.get("/api/user/stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
-      console.error("Error fetching user stats:", error);
-      res.status(500).json({ message: "Failed to fetch user stats" });
+      console.error("Error fetching stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
     }
   });
 
-  // Filter results route
+  // Filter results history
   app.get("/api/filter-results", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;

@@ -32,7 +32,7 @@ export interface IStorage {
   createFilterResult(result: InsertFilterResult): Promise<FilterResult>;
   getFilterResultsByUserId(userId: number, limit?: number): Promise<FilterResult[]>;
   getUserStats(userId: number): Promise<{
-    activeBaaijuses: number;
+    activeBaajuses: number;
     contentFiltered: number;
     averageAccuracy: number;
     totalRevenue: number;
@@ -43,12 +43,12 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    return user;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
@@ -59,49 +59,64 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Baaijus operations
-  async createBaaijus(baaijusData: InsertBaaijus): Promise<Baaijus> {
-    const [baaijus] = await db
-      .insert(baaijuses)
-      .values(baaijusData)
+  // Baajus operations
+  async createBaajus(baajusData: InsertBaajus): Promise<Baajus> {
+    const [baajus] = await db
+      .insert(baajuses)
+      .values(baajusData)
       .returning();
-    return baaijus;
+    return baajus;
   }
 
-  async getBaaijusesByUserId(userId: number): Promise<Baaijus[]> {
-    return await db.select().from(baaijuses).where(eq(baaijuses.userId, userId));
-  }
-
-  async getBaaijusById(id: number): Promise<Baaijus | undefined> {
-    const [baaijus] = await db.select().from(baaijuses).where(eq(baaijuses.id, id));
-    return baaijus || undefined;
-  }
-
-  async updateBaaijus(id: number, updates: Partial<InsertBaaijus>): Promise<Baaijus> {
-    const [baaijus] = await db
-      .update(baaijuses)
-      .set(updates)
-      .where(eq(baaijuses.id, id))
-      .returning();
-    return baaijus;
-  }
-
-  async deleteBaaijus(id: number): Promise<void> {
-    await db.delete(baaijuses).where(eq(baaijuses.id, id));
-  }
-
-  async getPublicBaaijuses(): Promise<Baaijus[]> {
+  async getBaajusesByUserId(userId: number): Promise<Baajus[]> {
     return await db
       .select()
-      .from(baaijuses)
-      .where(eq(baaijuses.isPublic, true));
+      .from(baajuses)
+      .where(eq(baajuses.userId, userId))
+      .orderBy(desc(baajuses.createdAt));
   }
 
-  async updateBaaijusUsage(id: number): Promise<void> {
+  async getBaajusById(id: number): Promise<Baajus | undefined> {
+    const [baajus] = await db
+      .select()
+      .from(baajuses)
+      .where(eq(baajuses.id, id));
+    return baajus;
+  }
+
+  async updateBaajus(id: number, updates: Partial<InsertBaajus>): Promise<Baajus> {
+    const [baajus] = await db
+      .update(baajuses)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(baajuses.id, id))
+      .returning();
+    return baajus;
+  }
+
+  async deleteBaajus(id: number): Promise<void> {
+    await db.delete(baajuses).where(eq(baajuses.id, id));
+  }
+
+  async getPublicBaajuses(): Promise<Baajus[]> {
+    return await db
+      .select()
+      .from(baajuses)
+      .where(eq(baajuses.isPublic, true))
+      .orderBy(desc(baajuses.usageCount))
+      .limit(50);
+  }
+
+  async updateBaajusUsage(id: number): Promise<void> {
     await db
-      .update(baaijuses)
-      .set({ usageCount: sql`${baaijuses.usageCount} + 1` })
-      .where(eq(baaijuses.id, id));
+      .update(baajuses)
+      .set({
+        usageCount: sql`${baajuses.usageCount} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(baajuses.id, id));
   }
 
   // Filter result operations
@@ -123,34 +138,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserStats(userId: number): Promise<{
-    activeBaaijuses: number;
+    activeBaajuses: number;
     contentFiltered: number;
     averageAccuracy: number;
     totalRevenue: number;
   }> {
-    // Get active baaijuses count
-    const [activeBaaijusesResult] = await db
-      .select({ count: count() })
-      .from(baaijuses)
-      .where(and(eq(baaijuses.userId, userId), eq(baaijuses.isActive, true)));
+    const [baajusStats] = await db
+      .select({
+        count: count(baajuses.id),
+      })
+      .from(baajuses)
+      .where(eq(baajuses.userId, userId));
 
-    // Get content filtered count
-    const [contentFilteredResult] = await db
-      .select({ count: count() })
+    const [filterStats] = await db
+      .select({
+        count: count(filterResults.id),
+        avgConfidence: avg(filterResults.confidence),
+      })
       .from(filterResults)
       .where(eq(filterResults.userId, userId));
 
-    // Get average accuracy (assuming we track this in baaijuses)
-    const [averageAccuracyResult] = await db
-      .select({ average: avg(baaijuses.accuracyRate) })
-      .from(baaijuses)
-      .where(eq(baaijuses.userId, userId));
-
     return {
-      activeBaaijuses: activeBaaijusesResult?.count || 0,
-      contentFiltered: contentFilteredResult?.count || 0,
-      averageAccuracy: averageAccuracyResult?.average || 0,
-      totalRevenue: 0, // Placeholder for revenue calculation
+      activeBaajuses: baajusStats?.count || 0,
+      contentFiltered: filterStats?.count || 0,
+      averageAccuracy: Number(filterStats?.avgConfidence || 0),
+      totalRevenue: 0, // Placeholder for future monetization features
     };
   }
 }
