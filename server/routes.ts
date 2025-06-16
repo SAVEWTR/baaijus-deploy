@@ -20,7 +20,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl
+        profileImageUrl: user.profileImageUrl,
+        role: user.role || 'user'
       });
     } catch (error) {
       console.error("Error fetching user:", error);
