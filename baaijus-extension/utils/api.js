@@ -2,7 +2,7 @@
 function getApiBase() {
   return new Promise(resolve => {
     chrome.runtime.sendMessage({ type: "GET_API_BASE" }, res => {
-      resolve(res.apiBase || 'https://f9655579-a631-49b5-a59f-879d7de9b35c-00-295kw66h2pml0.janeway.replit.dev/api');
+      resolve(res.apiBase || 'https://baaijus.replit.app/api');
     });
   });
 }
