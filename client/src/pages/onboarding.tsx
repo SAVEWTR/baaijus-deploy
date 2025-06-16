@@ -14,7 +14,7 @@ import {
 
 export default function Onboarding() {
   const handleDownload = () => {
-    window.open('/baaijus-extension-polished.zip', '_blank');
+    window.open('/baaijus-extension.zip', '_blank');
   };
 
   return (
