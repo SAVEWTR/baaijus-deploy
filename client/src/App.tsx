@@ -20,46 +20,40 @@ import Layout from "@/components/layout";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Don't render anything while loading to prevent 404 flash
+  // Show loading spinner during auth check
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  return (
-    <Switch>
-      {/* Authentication routes - always available */}
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
-      
-      {/* Root route - handle based on auth state */}
-      <Route path="/">
-        {isAuthenticated ? (
-          <Layout>
-            <Dashboard />
-          </Layout>
-        ) : (
-          <Landing />
-        )}
-      </Route>
-      
-      {/* Protected routes - only show if authenticated */}
-      {isAuthenticated && (
-        <Layout>
+  // If authenticated, show app layout with routes
+  if (isAuthenticated) {
+    return (
+      <Layout>
+        <Switch>
+          <Route path="/" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/baajuses" component={Baajuses} />
           <Route path="/demo" component={Demo} />
           <Route path="/extension" component={Extension} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
-        </Layout>
-      )}
-      
-      {/* 404 - only if not authenticated routes */}
-      {!isAuthenticated && <Route component={NotFound} />}
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
+    );
+  }
+
+  // If not authenticated, show public routes
+  return (
+    <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/" component={Landing} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
