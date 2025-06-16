@@ -1,11 +1,11 @@
 import {
   users,
-  baajuses,
+  baaijuses,
   filterResults,
   type User,
   type InsertUser,
-  type InsertBaajus,
-  type Baajus,
+  type InsertBaaijus,
+  type Baaijus,
   type InsertFilterResult,
   type FilterResult,
 } from "@shared/schema";

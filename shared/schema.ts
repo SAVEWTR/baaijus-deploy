@@ -41,8 +41,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Baajuses (bias profiles) table
-export const baajuses = pgTable("baajuses", {
+// Baaijuses (bias profiles) table
+export const baaijuses = pgTable("baaijuses", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(),
@@ -61,7 +61,7 @@ export const baajuses = pgTable("baajuses", {
 export const filterResults = pgTable("filter_results", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
-  baajusId: integer("baajus_id").notNull().references(() => baajuses.id),
+  baaijusId: integer("baaijus_id").notNull().references(() => baaijuses.id),
   content: text("content").notNull(),
   isBlocked: boolean("is_blocked").notNull(),
   confidence: real("confidence").notNull(),
@@ -72,13 +72,13 @@ export const filterResults = pgTable("filter_results", {
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
-  baajuses: many(baajuses),
+  baaijuses: many(baaijuses),
   filterResults: many(filterResults),
 }));
 
-export const baajusesRelations = relations(baajuses, ({ one, many }) => ({
+export const baaijusesRelations = relations(baaijuses, ({ one, many }) => ({
   user: one(users, {
-    fields: [baajuses.userId],
+    fields: [baaijuses.userId],
     references: [users.id],
   }),
   filterResults: many(filterResults),
@@ -89,14 +89,14 @@ export const filterResultsRelations = relations(filterResults, ({ one }) => ({
     fields: [filterResults.userId],
     references: [users.id],
   }),
-  baajus: one(baajuses, {
-    fields: [filterResults.baajusId],
-    references: [baajuses.id],
+  baaijus: one(baaijuses, {
+    fields: [filterResults.baaijusId],
+    references: [baaijuses.id],
   }),
 }));
 
 // Insert schemas
-export const insertBaajusSchema = createInsertSchema(baajuses).omit({
+export const insertBaaijusSchema = createInsertSchema(baaijuses).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -112,7 +112,7 @@ export const insertFilterResultSchema = createInsertSchema(filterResults).omit({
 // Types
 export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
-export type InsertBaajus = z.infer<typeof insertBaajusSchema>;
-export type Baajus = typeof baajuses.$inferSelect;
+export type InsertBaaijus = z.infer<typeof insertBaaijusSchema>;
+export type Baaijus = typeof baaijuses.$inferSelect;
 export type InsertFilterResult = z.infer<typeof insertFilterResultSchema>;
 export type FilterResult = typeof filterResults.$inferSelect;
