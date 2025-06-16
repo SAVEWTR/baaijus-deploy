@@ -11,7 +11,7 @@ export default function Extension() {
     setDownloadStarted(true);
     // Create a download link for the extension ZIP
     const link = document.createElement('a');
-    link.href = '/baaijus-extension.zip';
+    link.href = '/baaijus-extension-polished.zip';
     link.download = 'baaijus-extension.zip';
     document.body.appendChild(link);
     link.click();

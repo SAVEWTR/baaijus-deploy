@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import * as path from "path";
+import * as fs from "fs";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, requireRole } from "./auth";
 import { analyzeContent, generateBaajusDescription } from "./openai";
@@ -241,6 +243,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating export:", error);
       res.status(500).json({ message: "Failed to generate export" });
     }
+  });
+
+  // Serve polished extension ZIP download
+  app.get('/baaijus-extension-polished.zip', (req, res) => {
+    const zipPath = path.join(__dirname, '..', 'baaijus-extension-polished.zip');
+    
+    if (!fs.existsSync(zipPath)) {
+      return res.status(404).json({ message: 'Extension file not found' });
+    }
+    
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="baaijus-extension-polished.zip"');
+    res.sendFile(zipPath);
   });
 
   const httpServer = createServer(app);
