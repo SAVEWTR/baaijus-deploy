@@ -130,7 +130,11 @@ class BaaijusPopup {
       // Note: We're using session-based auth, so no Bearer token needed
       const apiBase = await this.getApiBase();
       const response = await fetch(`${apiBase}/baajuses`, {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
