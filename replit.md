@@ -126,6 +126,7 @@ Changelog:
 - June 16, 2025. Comprehensive testing completed - all authentication, filtering, and API endpoints verified
 - June 16, 2025. Platform ready for production deployment with test credentials and sample data
 - June 16, 2025. Added browser extension download and onboarding system with comprehensive installation guide
+- June 16, 2025. Fixed extension API URL configuration to point to correct production deployment (https://baaijus-filter.replit.app/api)
 ```
 
 ## User Preferences

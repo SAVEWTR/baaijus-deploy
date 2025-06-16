@@ -5,7 +5,7 @@ chrome.runtime.onInstalled.addListener(() => {
     baaijus_token: null, 
     active: true,
     selectedBaajus: null,
-    apiBase: 'http://localhost:5000/api' // Default to local dev, update for production
+    apiBase: 'https://baaijus-filter.replit.app/api' // Production API endpoint
   });
 });
 
