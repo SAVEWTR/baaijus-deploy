@@ -1,0 +1,14 @@
+{
+  "name": "baaijus-extension",
+  "version": "1.0.0",
+  "description": "Baaijus Browser Extension - Content Filtering Made Personal",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Extension ready for loading'",
+    "test": "echo 'No tests configured'",
+    "package": "zip -r baaijus-extension.zip . -x '*.git*' 'node_modules/*' 'package-lock.json'"
+  },
+  "keywords": ["content-filtering", "browser-extension", "privacy"],
+  "author": "Baaijus",
+  "license": "Proprietary"
+}

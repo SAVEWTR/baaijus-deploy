@@ -25,9 +25,9 @@ async function applyFiltering() {
     // If no specific Baajus selected, fetch the first active one
     if (!baajusToUse) {
       try {
-        const response = await fetch(`${apiBase}/baajuses`, {
+        const response = await fetch(`${apiBase || 'http://localhost:5000/api'}/baajuses`, {
+          credentials: 'include',
           headers: { 
-            'Authorization': `Bearer ${baaijus_token}`,
             'Content-Type': 'application/json'
           }
         });
