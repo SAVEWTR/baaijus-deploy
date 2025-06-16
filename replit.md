@@ -102,7 +102,10 @@ The application follows a full-stack architecture with the following components:
 
 ```
 Changelog:
-- June 16, 2025. Initial setup
+- June 16, 2025. Initial setup with Replit Auth
+- June 16, 2025. Replaced Replit Auth with custom username/password authentication system
+- June 16, 2025. Updated landing page with "Patent Pending" messaging and improved hero section
+- June 16, 2025. Configured OpenAI API integration for full AI content analysis
 ```
 
 ## User Preferences

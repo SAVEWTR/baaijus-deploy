@@ -37,29 +37,31 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="py-20">
-        <div className="container mx-auto px-6 text-center">
+        <div className="container mx-auto px-6 text-center mt-24">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            AI-Powered Content Filtering
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent block">
-              Made Personal
-            </span>
+            Content Filtering <span className="text-[#7059e3]">Made Personal</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Create custom bias profiles called "Baajuses" to filter and curate content with advanced AI. 
+          <div className="inline-block mb-4 bg-[#eaeaea] text-[#7059e3] px-4 py-2 rounded-full font-bold text-sm tracking-wider">
+            PATENT PENDING
+          </div>
+          <p className="text-xl text-gray-600 mb-8 max-w-[650px] mx-auto leading-relaxed">
+            Create custom bias profiles called "Baajuses" to filter and curate content across all your devices and nearly all content types.<br />
             Control what you see with personalized sensitivity levels and semantic understanding.
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/register">
               <Button 
                 size="lg"
-                className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg"
+                className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg px-8 py-3"
               >
                 Start Filtering
               </Button>
             </Link>
-            <Button size="lg" variant="outline">
-              Watch Demo
-            </Button>
+            <Link href="/demo">
+              <Button size="lg" variant="outline" className="px-8 py-3">
+                Watch Demo
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
