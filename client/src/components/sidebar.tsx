@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { Brain, BarChart3, Play, Settings, Share2, LayoutDashboard, LogOut, User, Crown } from "lucide-react";
+import { Brain, BarChart3, Play, Settings, Share2, LayoutDashboard, LogOut, User, Crown, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -8,6 +8,7 @@ const baseNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "My Baajuses", href: "/baajuses", icon: Brain },
   { name: "Live Demo", href: "/demo", icon: Play },
+  { name: "Browser Extension", href: "/extension", icon: Puzzle },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Shared Filters", href: "/shared", icon: Share2 },
   { name: "Settings", href: "/settings", icon: Settings },

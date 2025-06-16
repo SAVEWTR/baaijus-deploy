@@ -12,6 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import Baajuses from "@/pages/baajuses";
 import Demo from "@/pages/demo";
+import Extension from "@/pages/extension";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import Layout from "@/components/layout";
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/baajuses" component={Baajuses} />
           <Route path="/demo" component={Demo} />
+          <Route path="/extension" component={Extension} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
         </Layout>
