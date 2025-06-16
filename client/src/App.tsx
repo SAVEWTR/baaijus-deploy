@@ -15,6 +15,7 @@ import Demo from "@/pages/demo";
 import Extension from "@/pages/extension";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
+import Onboarding from "@/pages/onboarding";
 import Layout from "@/components/layout";
 
 function Router() {
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/baajuses" component={Baajuses} />
           <Route path="/demo" component={Demo} />
           <Route path="/extension" component={Extension} />
+          <Route path="/onboarding" component={Onboarding} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
           <Route>

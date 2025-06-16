@@ -59,6 +59,7 @@ class BaaijusPopup {
   async showDashboard() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'block';
+    document.getElementById('connectionStatus').style.display = 'flex';
 
     // Load current state
     const { active } = await this.getStorage(['active']);
