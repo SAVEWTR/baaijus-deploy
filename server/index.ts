@@ -1,11 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from 'cors';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
 // CORS middleware for browser extension
-const cors = require('cors');
 app.use(cors({
   origin: [
     'https://baaijus.replit.app',
@@ -49,6 +49,11 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Add explicit API 404 handler before static files
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: `API endpoint ${req.originalUrl} not found` });
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
