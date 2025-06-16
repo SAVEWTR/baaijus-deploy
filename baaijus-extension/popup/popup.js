@@ -25,6 +25,11 @@ class BaaijusPopup {
     return new Promise(resolve => chrome.runtime.sendMessage(message, resolve));
   }
 
+  async getApiBase() {
+    const { apiBase } = await this.getStorage(['apiBase']);
+    return apiBase || 'https://baaijus-filter.replit.app/api';
+  }
+
   setupEventListeners() {
     // Login form
     document.getElementById('loginBtn').addEventListener('click', () => this.handleLogin());
@@ -76,7 +81,8 @@ class BaaijusPopup {
     loginBtn.disabled = true;
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const apiBase = await this.getApiBase();
+      const response = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -106,7 +112,8 @@ class BaaijusPopup {
 
     try {
       // Note: We're using session-based auth, so no Bearer token needed
-      const response = await fetch('http://localhost:5000/api/baajuses', {
+      const apiBase = await this.getApiBase();
+      const response = await fetch(`${apiBase}/baajuses`, {
         credentials: 'include'
       });
 
