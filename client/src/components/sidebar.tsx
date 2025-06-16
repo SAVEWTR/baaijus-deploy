@@ -1,9 +1,10 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { Brain, BarChart3, Play, Settings, Share2, LayoutDashboard, LogOut, User } from "lucide-react";
+import { Brain, BarChart3, Play, Settings, Share2, LayoutDashboard, LogOut, User, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-const navigation = [
+const baseNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "My Baajuses", href: "/baajuses", icon: Brain },
   { name: "Live Demo", href: "/demo", icon: Play },
@@ -12,9 +13,18 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: "Master Admin", href: "/admin", icon: Crown },
+];
+
 export default function Sidebar() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
+
+  const isAdmin = user?.role === 'master_admin' || user?.role === 'admin';
+  const navigation = isAdmin 
+    ? [...baseNavigation, ...adminNavigation] 
+    : baseNavigation;
 
   return (
     <div className="w-64 bg-white shadow-lg flex flex-col">
@@ -37,6 +47,7 @@ export default function Sidebar() {
           {navigation.map((item) => {
             const isActive = location === item.href;
             const Icon = item.icon;
+            const isAdminItem = adminNavigation.some(nav => nav.href === item.href);
             
             return (
               <li key={item.name}>
@@ -50,6 +61,11 @@ export default function Sidebar() {
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
+                  {isAdminItem && (
+                    <Badge variant="destructive" className="ml-auto text-xs">
+                      Admin
+                    </Badge>
+                  )}
                 </button>
               </li>
             );
@@ -75,7 +91,14 @@ export default function Sidebar() {
             <p className="font-medium text-gray-900">
               {user?.firstName || user?.email || "User"}
             </p>
-            <p className="text-sm text-gray-500">Pro Plan</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-gray-500">Pro Plan</p>
+              {isAdmin && (
+                <Badge variant="destructive" className="text-xs">
+                  {user?.role === 'master_admin' ? 'Master' : 'Admin'}
+                </Badge>
+              )}
+            </div>
           </div>
           <Button
             variant="ghost"

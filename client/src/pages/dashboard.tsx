@@ -99,19 +99,19 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Revenue</p>
+                <p className="text-sm font-medium text-gray-600">This Week</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ${stats?.totalRevenue?.toFixed(2) || "0.00"}
+                  {recentActivity?.length || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-yellow-600" />
+                <Clock className="w-6 h-6 text-yellow-600" />
               </div>
             </div>
             <div className="mt-4 flex items-center">
               <span className="text-sm text-green-600 flex items-center">
                 <ArrowUp className="w-4 h-4 mr-1" />
-                +23% this month
+                +2 vs last week
               </span>
             </div>
           </CardContent>

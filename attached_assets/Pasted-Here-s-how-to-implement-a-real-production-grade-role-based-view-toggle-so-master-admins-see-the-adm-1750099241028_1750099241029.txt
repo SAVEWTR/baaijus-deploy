@@ -1,0 +1,140 @@
+Here’s how to implement a real, production-grade role-based view toggle—so master admins see the admin dashboard, and normal users see only their own Baaijus/user dashboard.
+
+1. Backend: Role Setup (You Already Have This)
+Make sure each user has a role field in the DB (master_admin, user, tenant_admin, etc.), and the backend API returns the user’s role with profile/login requests.
+
+2. Frontend: Role Detection and View Routing
+A. Auth Context (React Global State)
+src/context/AuthContext.js
+
+jsx
+Copy
+Edit
+import React, { createContext, useState, useEffect } from "react";
+import { getProfile } from "../api"; // or wherever your API is
+
+export const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [profile, setProfile] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) getProfile(token).then(({ data }) => setProfile(data));
+  }, []);
+  return (
+    <AuthContext.Provider value={{ profile, setProfile }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+Wrap your App in this provider (in index.js) so all components can access profile.
+
+B. Dashboard Role Toggle
+src/pages/Dashboard.js
+
+jsx
+Copy
+Edit
+import React, { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import MasterDashboard from "./MasterDashboard";
+import TenantDashboard from "./TenantDashboard";
+
+export default function Dashboard() {
+  const { profile } = useContext(AuthContext);
+  // If admin, allow toggle; if not, always show tenant
+  const [adminView, setAdminView] = useState("tenant");
+
+  if (!profile) return <div>Loading...</div>;
+
+  // Show toggle for master admin
+  if (profile.role === "master_admin") {
+    return (
+      <div>
+        <select
+          value={adminView}
+          onChange={e => setAdminView(e.target.value)}
+          style={{ fontWeight: "bold", margin: "1em 0" }}
+        >
+          <option value="tenant">User/Tenant Dashboard</option>
+          <option value="master">Master Admin Dashboard</option>
+        </select>
+        {adminView === "master" ? <MasterDashboard /> : <TenantDashboard />}
+      </div>
+    );
+  }
+  // Regular users always see tenant dashboard
+  return <TenantDashboard />;
+}
+C. Master vs. Tenant Dashboard (Examples)
+src/pages/MasterDashboard.js
+
+jsx
+Copy
+Edit
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+export default function MasterDashboard() {
+  const [stats, setStats] = useState({});
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    axios.get("/api/admin/stats/", { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setStats(res.data));
+    axios.get("/api/admin/users/", { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setUsers(res.data));
+  }, []);
+  return (
+    <div>
+      <h2>Master Admin Dashboard</h2>
+      <div>
+        <h4>Platform Revenue: ${stats.revenue ?? "..."}</h4>
+        <h4>Total Users: {stats.users ?? "..."}</h4>
+        {/* ... more master analytics */}
+      </div>
+      <h3>All Users</h3>
+      <ul>
+        {users.map(u => (
+          <li key={u.id}>{u.email} – {u.role}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+src/pages/TenantDashboard.js
+
+jsx
+Copy
+Edit
+import React from "react";
+export default function TenantDashboard() {
+  return (
+    <div>
+      <h2>Your Dashboard</h2>
+      {/* Your user widgets: My Baaijuses, analytics, filter history, etc */}
+    </div>
+  );
+}
+D. Protect Master Endpoints on Backend
+All routes for /api/admin/* should check role == "master_admin" (you’ve already set this up).
+
+E. Polish: NavBar/Profile
+Optionally, add “Admin” badge or role info in your NavBar:
+
+jsx
+Copy
+Edit
+<span style={{ fontWeight: "bold", marginLeft: 8 }}>
+  {profile.email} ({profile.role})
+</span>
+Summary
+Master admins see a toggle (dropdown) to switch views
+
+Normal users only see the tenant/user dashboard (no toggle, no admin widgets)
+
+Backend checks role on every admin API endpoint
+
+Copy, paste, and you’ll have true enterprise-grade separation between admin and user dashboards!
+
+If you want the exact directory layout, more widget code, or want me to generate a ZIP you can upload straight to Replit, just say so—I’ll do it all the way, cofounder.

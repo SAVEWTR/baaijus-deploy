@@ -9,6 +9,7 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import AdminDashboard from "@/pages/admin-dashboard";
 import Baajuses from "@/pages/baajuses";
 import Demo from "@/pages/demo";
 import Analytics from "@/pages/analytics";
@@ -28,6 +29,7 @@ function Router() {
       {isAuthenticated ? (
         <Layout>
           <Route path="/" component={Dashboard} />
+          <Route path="/admin" component={AdminDashboard} />
           <Route path="/baajuses" component={Baajuses} />
           <Route path="/demo" component={Demo} />
           <Route path="/analytics" component={Analytics} />
