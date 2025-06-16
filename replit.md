@@ -137,12 +137,12 @@ Changelog:
   * Implemented real-time connection status in extension popup with visual indicators
   * Enhanced browser compatibility messaging and troubleshooting guidance
   * Successfully deployed all improvements - platform fully operational with working extension downloads
-- June 16, 2025. Added comprehensive connection status indicators:
-  * Added dynamic extension status indicator to /extension page with real-time connection detection
-  * Enhanced dashboard topbar with "Extension Connected/Offline" status and pulsing indicator
-  * Updated extension popup to show connection status when authenticated
-  * Fixed extension API URL configuration and CORS credentials for proper authentication
-  * Extension now properly communicates with web app for seamless status monitoring
+- June 16, 2025. Fixed extension authentication issues:
+  * Completely rebuilt extension popup with simplified authentication flow
+  * Added Bearer token support to backend for extension API compatibility  
+  * Removed broken connection status indicators that were causing failures
+  * Created clean, minimal extension that focuses on core login/baajus functionality
+  * Extension now uses proper session-based auth with fallback Bearer token support
 ```
 
 ## User Preferences

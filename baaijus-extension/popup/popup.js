@@ -1,248 +1,128 @@
-// Popup script for Baaijus extension
 class BaaijusPopup {
   constructor() {
-    this.init();
+    this.apiBase = 'https://baaijus.replit.app/api';
   }
 
   async init() {
-    // Check if user is already logged in
-    const { baaijus_token } = await this.getStorage(['baaijus_token']);
+    this.setupEventListeners();
     
-    if (baaijus_token) {
-      await this.showDashboard();
+    // Check if user is logged in
+    const { baaijus_user } = await chrome.storage.local.get(['baaijus_user']);
+    if (baaijus_user) {
+      this.showDashboard();
     } else {
       this.showLogin();
     }
-
-    this.setupEventListeners();
-  }
-
-  getStorage(keys) {
-    return new Promise(resolve => chrome.storage.local.get(keys, resolve));
-  }
-
-  sendMessage(message) {
-    return new Promise(resolve => chrome.runtime.sendMessage(message, resolve));
-  }
-
-  async getApiBase() {
-    const { apiBase } = await this.getStorage(['apiBase']);
-    return apiBase || 'https://f9655579-a631-49b5-a59f-879d7de9b35c-00-295kw66h2pml0.janeway.replit.dev/api';
   }
 
   setupEventListeners() {
-    // Login form
     document.getElementById('loginBtn').addEventListener('click', () => this.handleLogin());
-    document.getElementById('password').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') this.handleLogin();
-    });
-
-    // Dashboard controls
-    document.getElementById('activeToggle').addEventListener('change', (e) => {
-      this.handleToggleActive(e.target.checked);
-    });
-
     document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
-    
-    document.getElementById('openDashboard').addEventListener('click', async () => {
-      const apiBase = await this.getApiBase();
-      const dashboardUrl = apiBase.replace('/api', '/');
-      chrome.tabs.create({ url: dashboardUrl });
-    });
+    document.getElementById('activeToggle').addEventListener('change', (e) => this.handleToggleActive(e.target.checked));
   }
 
   showLogin() {
-    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('loginSection').style.display = 'flex';
     document.getElementById('dashboardSection').style.display = 'none';
   }
 
-  async showDashboard() {
+  showDashboard() {
     document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('dashboardSection').style.display = 'block';
-    
-    // Show connection status indicator
-    const connectionStatus = document.getElementById('connectionStatus');
-    if (connectionStatus) {
-      connectionStatus.style.display = 'flex';
-    }
-
-    // Load current state
-    const { active } = await this.getStorage(['active']);
-    document.getElementById('activeToggle').checked = active !== false;
-
-    // Load user's Baajuses
-    await this.loadBaajuses();
+    document.getElementById('dashboardSection').style.display = 'flex';
+    this.loadBaajuses();
   }
 
   async handleLogin() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const statusEl = document.getElementById('loginStatus');
-    const loginBtn = document.getElementById('loginBtn');
 
     if (!username || !password) {
-      this.showStatus('Please enter both username and password', 'error');
+      this.showStatus('Please enter username and password', 'error');
       return;
     }
 
-    loginBtn.textContent = 'Signing in...';
-    loginBtn.disabled = true;
-
     try {
-      const apiBase = await this.getApiBase();
-      console.log('API Base:', apiBase);
-      
-      // First test basic connectivity
-      try {
-        const testResponse = await fetch(`${apiBase}/test`, {
-          method: 'GET',
-          credentials: 'include'
-        });
-        console.log('Test endpoint response:', testResponse.status, await testResponse.text());
-      } catch (testError) {
-        console.error('Test endpoint failed:', testError);
-      }
-      
-      console.log('Attempting login to:', `${apiBase}/auth/login`);
-      const response = await fetch(`${apiBase}/auth/login`, {
+      const response = await fetch(`${this.apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
-      console.log('Login response status:', response.status);
-      console.log('Login response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful, user data:', data);
-        await chrome.storage.local.set({ baaijus_token: data.id }); // Store user ID as token
+        const userData = await response.json();
+        await chrome.storage.local.set({ baaijus_user: userData });
         this.showStatus('Login successful!', 'success');
-        setTimeout(() => {
-          this.showDashboard();
-        }, 1000);
+        setTimeout(() => this.showDashboard(), 1000);
       } else {
-        const errorText = await response.text();
-        console.error('Login failed - Status:', response.status, 'Response:', errorText);
-        try {
-          const error = JSON.parse(errorText);
-          this.showStatus(error.message || 'Login failed', 'error');
-        } catch (parseError) {
-          console.error('Failed to parse error response:', parseError);
-          this.showStatus(`Login failed: ${response.status} - ${errorText}`, 'error');
-        }
+        this.showStatus('Invalid credentials', 'error');
       }
     } catch (error) {
-      console.error('Login error details:', {
-        error: error,
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        this.showStatus('Network error: Cannot reach server. Check CORS/permissions.', 'error');
-      } else {
-        this.showStatus(`Connection error: ${error.message}`, 'error');
-      }
+      this.showStatus('Connection error', 'error');
     }
-
-    loginBtn.textContent = 'Sign In';
-    loginBtn.disabled = false;
   }
 
   async loadBaajuses() {
-    const { baaijus_token } = await this.getStorage(['baaijus_token']);
-    
-    if (!baaijus_token) return;
-
     try {
-      // Note: We're using session-based auth, so no Bearer token needed
-      const apiBase = await this.getApiBase();
-      const response = await fetch(`${apiBase}/baajuses`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const { baaijus_user } = await chrome.storage.local.get(['baaijus_user']);
+      if (!baaijus_user) return;
+
+      const response = await fetch(`${this.apiBase}/baajuses`, {
+        headers: { 'Authorization': `Bearer ${baaijus_user.id}` }
       });
 
       if (response.ok) {
         const baajuses = await response.json();
         this.displayBaajuses(baajuses);
-      } else {
-        console.error('Failed to load Baajuses');
       }
     } catch (error) {
-      console.error('Error loading Baajuses:', error);
+      console.error('Failed to load baajuses:', error);
     }
   }
 
   displayBaajuses(baajuses) {
-    const listEl = document.getElementById('baajusList');
-    
+    const container = document.getElementById('baajusList');
+    container.innerHTML = '';
+
     if (baajuses.length === 0) {
-      listEl.innerHTML = '<div style="color: #666; font-size: 12px; text-align: center; padding: 16px;">No Baajuses created yet. Create one in the dashboard!</div>';
+      container.innerHTML = '<div style="color: #666; font-size: 12px;">No Baajuses found</div>';
       return;
     }
 
-    listEl.innerHTML = baajuses.map(baajus => `
-      <div class="baajus-item">
+    baajuses.forEach(baajus => {
+      const item = document.createElement('div');
+      item.className = 'baajus-item';
+      item.innerHTML = `
         <div class="baajus-info">
-          <div class="baajus-name">${this.escapeHtml(baajus.name)}</div>
-          <div class="baajus-meta">
-            ${baajus.sensitivity} • ${baajus.keywords ? baajus.keywords.split(',').length + ' keywords' : 'No keywords'}
-          </div>
+          <div class="baajus-name">${baajus.name}</div>
+          <div class="baajus-meta">${baajus.sensitivity} • ${baajus.usageCount || 0} uses</div>
         </div>
-        <div style="font-size: 12px; color: ${baajus.isActive ? '#16a34a' : '#666'};">
-          ${baajus.isActive ? 'Active' : 'Inactive'}
-        </div>
-      </div>
-    `).join('');
+      `;
+      container.appendChild(item);
+    });
   }
 
   async handleToggleActive(active) {
-    await this.sendMessage({ type: 'TOGGLE_ACTIVE', active });
-    
-    // Reload current tab to apply/remove filtering
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    chrome.tabs.reload(tab.id);
+    await chrome.storage.local.set({ filtering_active: active });
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_FILTERING', active });
+    });
   }
 
   async handleLogout() {
-    try {
-      // Try to logout from backend
-      const apiBase = await this.getApiBase();
-      await fetch(`${apiBase}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-    } catch (error) {
-      console.log('Backend logout failed, continuing with local logout');
-    }
-
-    // Clear local storage
-    await this.sendMessage({ type: 'SET_TOKEN', token: null });
-    await this.sendMessage({ type: 'SET_SELECTED_BAAJUS', baajus: null });
-    
+    await chrome.storage.local.clear();
     this.showLogin();
   }
 
   showStatus(message, type) {
-    const statusEl = document.getElementById('loginStatus');
-    statusEl.textContent = message;
-    statusEl.className = `status ${type}`;
-    statusEl.style.display = 'block';
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const status = document.getElementById('loginStatus');
+    status.textContent = message;
+    status.className = `status ${type}`;
+    status.style.display = 'block';
+    setTimeout(() => status.style.display = 'none', 3000);
   }
 }
 
-// Initialize popup when DOM is ready
+// Initialize popup
 document.addEventListener('DOMContentLoaded', () => {
-  new BaaijusPopup();
+  new BaaijusPopup().init();
 });

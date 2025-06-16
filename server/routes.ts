@@ -36,8 +36,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Extension-compatible auth middleware
+  const extensionAuth = async (req: any, res: any, next: any) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const userId = parseInt(authHeader.substring(7));
+      try {
+        const user = await storage.getUser(userId);
+        if (user) {
+          req.user = user;
+          return next();
+        }
+      } catch (error) {
+        console.error("Extension auth error:", error);
+      }
+    }
+    
+    // Fall back to session auth
+    return isAuthenticated(req, res, next);
+  };
+
   // Baaijus routes
-  app.get("/api/baaijuses", isAuthenticated, async (req: any, res) => {
+  app.get("/api/baaijuses", extensionAuth, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const baaijuses = await storage.getBaaijusesByUserId(userId);
