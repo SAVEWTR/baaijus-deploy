@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,38 @@ import { Download, Chrome, Globe, CheckCircle, AlertCircle, Play, Settings, Shie
 
 export default function Extension() {
   const [downloadStarted, setDownloadStarted] = useState(false);
+  const [extensionConnected, setExtensionConnected] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    // Check for extension connection every 3 seconds
+    const checkExtension = () => {
+      // Listen for messages from extension
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'BAAIJUS_EXTENSION_PING') {
+          setExtensionConnected(true);
+          setChecking(false);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+      
+      // Send ping to extension
+      window.postMessage({ type: 'BAAIJUS_WEB_PING' }, '*');
+      
+      // Timeout after 2 seconds if no response
+      setTimeout(() => {
+        setChecking(false);
+      }, 2000);
+
+      return () => window.removeEventListener('message', handleMessage);
+    };
+
+    const interval = setInterval(checkExtension, 3000);
+    checkExtension(); // Initial check
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDownload = () => {
     setDownloadStarted(true);
@@ -33,14 +65,35 @@ export default function Extension() {
         </div>
 
         {/* Status Card */}
-        <Card className="mb-8 border-orange-200 bg-orange-50">
+        <Card className={`mb-8 ${extensionConnected ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
-              <AlertCircle className="w-6 h-6 text-orange-600" />
-              <div>
-                <h3 className="font-semibold text-orange-900">Extension Status</h3>
-                <p className="text-orange-700">
-                  Not detected. Follow the installation steps below to get started.
+              {checking ? (
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              ) : extensionConnected ? (
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              ) : (
+                <AlertCircle className="w-6 h-6 text-orange-600" />
+              )}
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className={`font-semibold ${extensionConnected ? 'text-green-900' : 'text-orange-900'}`}>
+                    Extension Status
+                  </h3>
+                  {extensionConnected && (
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-green-700 font-medium">Live</span>
+                    </div>
+                  )}
+                </div>
+                <p className={extensionConnected ? 'text-green-700' : 'text-orange-700'}>
+                  {checking 
+                    ? 'Checking for extension...' 
+                    : extensionConnected 
+                      ? 'Connected and active. Content filtering is available across all websites.'
+                      : 'Not detected. Follow the installation steps below to get started.'
+                  }
                 </p>
               </div>
             </div>

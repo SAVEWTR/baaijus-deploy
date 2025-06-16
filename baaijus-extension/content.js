@@ -138,6 +138,13 @@ if (document.readyState === 'loading') {
   applyFiltering();
 }
 
+// Listen for web app ping and respond
+window.addEventListener('message', (event) => {
+  if (event.data?.type === 'BAAIJUS_WEB_PING') {
+    window.postMessage({ type: 'BAAIJUS_EXTENSION_PING' }, '*');
+  }
+});
+
 // Also apply filtering when new content is added dynamically
 const observer = new MutationObserver(() => {
   applyFiltering();
