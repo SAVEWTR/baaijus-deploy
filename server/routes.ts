@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, requireRole } from "./auth";
 import { analyzeContent, generateBaajusDescription } from "./openai";
 import { insertBaaijusSchema, insertFilterResultSchema } from "@shared/schema";
 import { z } from "zod";
@@ -184,6 +184,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching filter results:", error);
       res.status(500).json({ message: "Failed to fetch filter results" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/revenue", isAuthenticated, requireRole(['master_admin']), async (req: any, res) => {
+    try {
+      const adminStats = await storage.getAdminRevenue();
+      res.json(adminStats);
+    } catch (error) {
+      console.error("Error fetching admin revenue:", error);
+      res.status(500).json({ message: "Failed to fetch revenue data" });
+    }
+  });
+
+  app.get("/api/admin/signups", isAuthenticated, requireRole(['master_admin']), async (req: any, res) => {
+    try {
+      const signupStats = await storage.getSignupStats();
+      res.json(signupStats);
+    } catch (error) {
+      console.error("Error fetching signup stats:", error);
+      res.status(500).json({ message: "Failed to fetch signup data" });
+    }
+  });
+
+  app.get("/api/admin/popular-baaijuses", isAuthenticated, requireRole(['master_admin']), async (req: any, res) => {
+    try {
+      const popularBaaijuses = await storage.getPopularBaaijuses();
+      res.json(popularBaaijuses);
+    } catch (error) {
+      console.error("Error fetching popular baaijuses:", error);
+      res.status(500).json({ message: "Failed to fetch popular baaijuses" });
+    }
+  });
+
+  app.get("/api/admin/users", isAuthenticated, requireRole(['master_admin']), async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/export", isAuthenticated, requireRole(['master_admin']), async (req: any, res) => {
+    try {
+      // Generate export data
+      const exportData = await storage.getExportData();
+      res.json({ 
+        url: `/exports/baaijus-report-${new Date().toISOString().split('T')[0]}.csv`,
+        data: exportData
+      });
+    } catch (error) {
+      console.error("Error generating export:", error);
+      res.status(500).json({ message: "Failed to generate export" });
     }
   });
 

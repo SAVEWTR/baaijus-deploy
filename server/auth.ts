@@ -146,3 +146,15 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     res.status(401).json({ message: "Unauthorized" });
   }
 };
+
+export const requireRole = (allowedRoles: string[]): RequestHandler => {
+  return (req, res, next) => {
+    const user = (req as any).user;
+    
+    if (!user || !allowedRoles.includes(user.role || 'user')) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    
+    next();
+  };
+};
