@@ -58,9 +58,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Baaijus routes
   app.get("/api/baaijuses", extensionAuth, async (req: any, res) => {
+    console.log("API: Handling /api/baaijuses request");
     try {
       const userId = req.user.id;
+      console.log("API: User ID:", userId);
       const baaijuses = await storage.getBaaijusesByUserId(userId);
+      console.log("API: Found", baaijuses.length, "baaijuses");
       res.json(baaijuses);
     } catch (error) {
       console.error("Error fetching baaijuses:", error);
