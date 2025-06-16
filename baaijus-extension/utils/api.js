@@ -2,7 +2,7 @@
 function getApiBase() {
   return new Promise(resolve => {
     chrome.runtime.sendMessage({ type: "GET_API_BASE" }, res => {
-      resolve(res.apiBase || 'http://localhost:5000/api');
+      resolve(res.apiBase || 'https://baaijus-filter.replit.app/api');
     });
   });
 }

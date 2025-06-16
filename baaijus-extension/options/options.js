@@ -24,7 +24,7 @@ class BaaijusOptions {
       'defaultSensitivity'
     ]);
 
-    document.getElementById('apiBase').value = settings.apiBase || 'http://localhost:5000/api';
+    document.getElementById('apiBase').value = settings.apiBase || 'https://baaijus-filter.replit.app/api';
     document.getElementById('autoEnable').checked = settings.autoEnable !== false;
     document.getElementById('defaultSensitivity').value = settings.defaultSensitivity || 'balanced';
   }
@@ -90,7 +90,7 @@ class BaaijusOptions {
 
   async openDashboard() {
     const { apiBase } = await this.getStorage(['apiBase']);
-    const dashboardUrl = (apiBase || 'http://localhost:5000/api').replace('/api', '');
+    const dashboardUrl = (apiBase || 'https://baaijus-filter.replit.app/api').replace('/api', '');
     chrome.tabs.create({ url: dashboardUrl });
   }
 

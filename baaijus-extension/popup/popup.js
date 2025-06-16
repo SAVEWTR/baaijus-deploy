@@ -44,8 +44,10 @@ class BaaijusPopup {
 
     document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
     
-    document.getElementById('openDashboard').addEventListener('click', () => {
-      chrome.tabs.create({ url: 'http://localhost:5000' }); // Update for production
+    document.getElementById('openDashboard').addEventListener('click', async () => {
+      const apiBase = await this.getApiBase();
+      const dashboardUrl = apiBase.replace('/api', '');
+      chrome.tabs.create({ url: dashboardUrl });
     });
   }
 
@@ -162,7 +164,8 @@ class BaaijusPopup {
   async handleLogout() {
     try {
       // Try to logout from backend
-      await fetch('http://localhost:5000/api/auth/logout', {
+      const apiBase = await this.getApiBase();
+      await fetch(`${apiBase}/auth/logout`, {
         method: 'POST',
         credentials: 'include'
       });
