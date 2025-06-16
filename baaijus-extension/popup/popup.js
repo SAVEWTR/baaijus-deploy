@@ -27,7 +27,7 @@ class BaaijusPopup {
 
   async getApiBase() {
     const { apiBase } = await this.getStorage(['apiBase']);
-    return apiBase || 'https://baaijus-filter-email6068.replit.app/api';
+    return apiBase || 'https://f9655579-a631-49b5-a59f-879d7de9b35c-00-295kw66h2pml0.janeway.replit.dev/api';
   }
 
   setupEventListeners() {

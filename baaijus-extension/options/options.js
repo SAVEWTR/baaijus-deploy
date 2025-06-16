@@ -24,7 +24,7 @@ class BaaijusOptions {
       'defaultSensitivity'
     ]);
 
-    document.getElementById('apiBase').value = settings.apiBase || 'https://baaijus-filter.replit.app/api';
+    document.getElementById('apiBase').value = settings.apiBase || 'https://f9655579-a631-49b5-a59f-879d7de9b35c-00-295kw66h2pml0.janeway.replit.dev/api';
     document.getElementById('autoEnable').checked = settings.autoEnable !== false;
     document.getElementById('defaultSensitivity').value = settings.defaultSensitivity || 'balanced';
   }
