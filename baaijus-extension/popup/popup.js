@@ -90,8 +90,8 @@ class BaaijusPopup {
 
     try {
       const apiBase = await this.getApiBase();
-      console.log('Attempting login to:', `${apiBase}/auth/login`);
-      const response = await fetch(`${apiBase}/auth/login`, {
+      console.log('Attempting login to:', `${apiBase}/login`);
+      const response = await fetch(`${apiBase}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
