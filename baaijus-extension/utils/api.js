@@ -8,25 +8,30 @@ async function getApiBase() {
 export async function login(username, password) {
   const apiBase = await getApiBase();
   
-  const response = await fetch(`${apiBase}/auth/login`, {
+  const response = await fetch(`${apiBase}/ext/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({ username, password })
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || 'Login failed');
+    const errorText = await response.text();
+    try {
+      const error = JSON.parse(errorText);
+      throw new Error(error.message || 'Login failed');
+    } catch {
+      throw new Error('Login failed');
+    }
   }
 
   const user = await response.json();
   
-  // Store session info locally for extension
+  // Store token and user info for extension
   await chrome.storage.local.set({
     baaijus_user: user,
+    baaijus_token: user.token,
     isLoggedIn: true
   });
   
@@ -35,15 +40,22 @@ export async function login(username, password) {
 
 export async function getBaajuses() {
   const apiBase = await getApiBase();
+  const { baaijus_token } = await chrome.storage.local.get(['baaijus_token']);
   
-  const response = await fetch(`${apiBase}/baaijuses`, {
-    credentials: 'include'
+  if (!baaijus_token) {
+    throw new Error('Not authenticated');
+  }
+  
+  const response = await fetch(`${apiBase}/ext/baaijuses`, {
+    headers: {
+      'Authorization': `Bearer ${baaijus_token}`
+    }
   });
 
   if (!response.ok) {
     if (response.status === 401) {
       // Clear local auth state
-      await chrome.storage.local.remove(['baaijus_user', 'isLoggedIn']);
+      await chrome.storage.local.remove(['baaijus_user', 'baaijus_token', 'isLoggedIn']);
       throw new Error('Not authenticated');
     }
     throw new Error('Failed to fetch baaijuses');

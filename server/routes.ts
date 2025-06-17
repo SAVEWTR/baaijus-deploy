@@ -42,9 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Working login endpoint that bypasses Vite
-  app.post('/login', async (req, res) => {
-    console.log("✓ REACHED /login route handler");
+  // Extension-compatible login endpoint with token auth
+  app.post('/api/ext/login', async (req, res) => {
+    console.log("✓ REACHED /ext/login route handler");
     try {
       const { username, password } = req.body;
 
@@ -63,8 +63,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Set session
-      (req.session as any).userId = user.id;
+      // Generate simple token for extension
+      const token = `ext_${user.id}_${Date.now()}`;
 
       res.json({ 
         id: user.id, 
@@ -72,11 +72,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl
+        profileImageUrl: user.profileImageUrl,
+        token: token
       });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Extension login error:", error);
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Extension-compatible baaijuses endpoint
+  app.get('/api/ext/baaijuses', async (req, res) => {
+    console.log("✓ REACHED /ext/baaijuses route handler");
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ext_')) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const userIdMatch = token.match(/ext_(\d+)_/);
+      if (!userIdMatch) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+
+      const userId = parseInt(userIdMatch[1]);
+      const baaijuses = await storage.getBaaijusesByUserId(userId);
+      res.json(baaijuses);
+    } catch (error) {
+      console.error("Error fetching extension baaijuses:", error);
+      res.status(500).json({ message: "Failed to fetch baaijuses" });
     }
   });
 
