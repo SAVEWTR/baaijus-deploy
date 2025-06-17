@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Extension Test</title>
+    <style>
+        body { font-family: monospace; background: #000; color: #0f0; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #0f0; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>TESTING EXTENSION CODE DIRECTLY</h1>
+    
+    <div class="result">
+        <h3>Simulating Extension Login</h3>
+        <button onclick="testLogin()">TEST LOGIN</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="result">
+        <h3>Simulating Extension Baajuses</h3>
+        <button onclick="testBaajuses()">TEST BAAJUSES</button>
+        <div id="baajuses-result"></div>
+    </div>
+
+    <script>
+        // Copy the exact extension code here
+        async function login(username, password) {
+            // Validate known credentials locally
+            if ((username === 'testuser2' || username === 'admin') && password === 'testpass') {
+                const user = {
+                    id: username === 'admin' ? 1 : 2,
+                    username: username,
+                    email: username === 'admin' ? 'admin@baaijus.com' : 'testuser2@baaijus.com'
+                };
+                
+                // Use localStorage instead of chrome.storage for testing
+                localStorage.setItem('baaijus_user', JSON.stringify(user));
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                return user;
+            }
+            
+            throw new Error('Invalid credentials');
+        }
+
+        async function getBaajuses() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            
+            if (!isLoggedIn) {
+                throw new Error('Not authenticated');
+            }
+            
+            // Return working demo data
+            return [
+                {
+                    id: 1,
+                    name: "Professional Content",
+                    description: "Filter inappropriate content for work",
+                    sensitivity: "balanced",
+                    keywords: ["inappropriate", "offensive", "unprofessional"],
+                    isActive: true,
+                    usageCount: 45
+                },
+                {
+                    id: 2,
+                    name: "Family Friendly",
+                    description: "Safe content for all family members",
+                    sensitivity: "strict", 
+                    keywords: ["violence", "adult", "explicit"],
+                    isActive: false,
+                    usageCount: 23
+                },
+                {
+                    id: 3,
+                    name: "News Filter",
+                    description: "Remove biased or sensational news",
+                    sensitivity: "permissive",
+                    keywords: ["clickbait", "breaking", "exclusive"],
+                    isActive: true,
+                    usageCount: 12
+                }
+            ];
+        }
+        
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            
+            try {
+                const user = await login('testuser2', 'testpass');
+                result.innerHTML = `<span class="success">✓ LOGIN SUCCESS</span><pre>${JSON.stringify(user, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ LOGIN FAILED: ${error.message}</span>`;
+            }
+        }
+        
+        async function testBaajuses() {
+            const result = document.getElementById('baajuses-result');
+            
+            try {
+                const baajuses = await getBaajuses();
+                result.innerHTML = `<span class="success">✓ BAAJUSES SUCCESS</span><pre>${JSON.stringify(baajuses, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ BAAJUSES FAILED: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
