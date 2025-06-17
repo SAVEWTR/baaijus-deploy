@@ -29,9 +29,13 @@ app.use(express.urlencoded({ extended: false }));
 
 // DIRECT EXTENSION LOGIN - BYPASSES ALL VITE ROUTING
 app.post('/ext-login', async (req, res) => {
+  console.log('EXT-LOGIN REQUEST:', req.body);
   try {
     const { username, password } = req.body;
+    console.log('Credentials:', { username, password });
+    
     if (username === 'testuser2' && password === 'testpass') {
+      console.log('LOGIN SUCCESS: testuser2');
       return res.json({ 
         id: 2, 
         username: 'testuser2', 
@@ -40,6 +44,7 @@ app.post('/ext-login', async (req, res) => {
       });
     }
     if (username === 'admin' && password === 'testpass') {
+      console.log('LOGIN SUCCESS: admin');
       return res.json({ 
         id: 1, 
         username: 'admin', 
@@ -47,8 +52,10 @@ app.post('/ext-login', async (req, res) => {
         token: `ext_1_${Date.now()}`
       });
     }
+    console.log('LOGIN FAILED: Invalid credentials');
     res.status(401).json({ message: 'Invalid credentials' });
   } catch (error) {
+    console.log('LOGIN ERROR:', error);
     res.status(500).json({ message: 'Login failed' });
   }
 });
