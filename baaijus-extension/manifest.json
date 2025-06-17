@@ -15,7 +15,8 @@
     "cookies"
   ],
   "host_permissions": [
-    "https://baaijus.replit.app/*"
+    "https://baaijus.replit.app/*",
+    "http://localhost:5000/*"
   ],
   "background": {
     "service_worker": "background.js"

@@ -42,40 +42,26 @@ class BaaijusPopup {
     }
 
     try {
-      const response = await fetch(`${this.apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        await chrome.storage.local.set({ baaijus_user: userData });
-        this.showStatus('Login successful!', 'success');
-        setTimeout(() => this.showDashboard(), 1000);
-      } else {
-        this.showStatus('Invalid credentials', 'error');
-      }
+      const { login } = await import('../utils/api.js');
+      const userData = await login(username, password);
+      this.showStatus('Login successful!', 'success');
+      setTimeout(() => this.showDashboard(), 1000);
     } catch (error) {
-      this.showStatus('Connection error', 'error');
+      this.showStatus(error.message || 'Login failed', 'error');
     }
   }
 
   async loadBaajuses() {
     try {
-      const { baaijus_user } = await chrome.storage.local.get(['baaijus_user']);
-      if (!baaijus_user) return;
-
-      const response = await fetch(`${this.apiBase}/baajuses`, {
-        headers: { 'Authorization': `Bearer ${baaijus_user.id}` }
-      });
-
-      if (response.ok) {
-        const baajuses = await response.json();
-        this.displayBaajuses(baajuses);
-      }
+      const { getBaajuses } = await import('../utils/api.js');
+      const baajuses = await getBaajuses();
+      this.displayBaajuses(baajuses);
     } catch (error) {
       console.error('Failed to load baajuses:', error);
+      // If not authenticated, show login form
+      if (error.message === 'Not authenticated') {
+        this.showLogin();
+      }
     }
   }
 
