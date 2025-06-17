@@ -1,10 +1,12 @@
-// Working authentication with server
+// Extension authentication using existing login endpoint
 
 export async function login(username, password) {
   try {
-    const response = await fetch('https://baaijus.replit.app/ext-login', {
+    // Use the existing login endpoint that's already deployed
+    const response = await fetch('https://baaijus.replit.app/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username, password })
     });
 
@@ -26,33 +28,29 @@ export async function login(username, password) {
 }
 
 export async function getBaajuses() {
-  const { isLoggedIn, baaijus_user } = await chrome.storage.local.get(['isLoggedIn', 'baaijus_user']);
+  const { isLoggedIn } = await chrome.storage.local.get(['isLoggedIn']);
   
   if (!isLoggedIn) {
     throw new Error('Not authenticated');
   }
   
-  // Return sample data that works
-  return [
-    {
-      id: 1,
-      name: "Professional Content",
-      description: "Filter inappropriate content for professional environments",
-      sensitivity: "balanced",
-      keywords: ["inappropriate", "offensive", "unprofessional"],
-      isActive: true,
-      usageCount: 45
-    },
-    {
-      id: 2,
-      name: "Family Friendly",
-      description: "Keep content suitable for all family members",
-      sensitivity: "strict", 
-      keywords: ["violence", "adult", "explicit"],
-      isActive: false,
-      usageCount: 23
+  try {
+    const response = await fetch('https://baaijus.replit.app/api/baajuses', {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        await chrome.storage.local.remove(['baaijus_user', 'isLoggedIn']);
+        throw new Error('Not authenticated');
+      }
+      throw new Error('Failed to fetch baaijuses');
     }
-  ];
+
+    return response.json();
+  } catch (error) {
+    throw new Error('Failed to fetch baaijuses');
+  }
 }
 
 export async function getUser() {

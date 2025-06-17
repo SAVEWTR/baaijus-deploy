@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Extension Test</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #000; color: #0f0; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #0f0; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 10px; margin: 5px; }
+        pre { color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>FORCING EXTENSION AUTH TO WORK</h1>
+    
+    <div class="test">
+        <h3>STEP 1: Test every possible endpoint</h3>
+        <button onclick="testAllEndpoints()">TEST ALL ENDPOINTS</button>
+        <div id="endpoints-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>STEP 2: Force authentication with working endpoint</h3>
+        <button onclick="forceAuth()">FORCE AUTH</button>
+        <div id="auth-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>STEP 3: Test baajuses fetch</h3>
+        <button onclick="testBaajuses()">TEST BAAJUSES</button>
+        <div id="baajuses-result"></div>
+    </div>
+
+    <script>
+        async function testAllEndpoints() {
+            const result = document.getElementById('endpoints-result');
+            result.innerHTML = 'Testing all possible endpoints...';
+            
+            const endpoints = [
+                '/api/login',
+                '/api/ext/login', 
+                '/ext-login',
+                '/login',
+                '/api/auth/login'
+            ];
+            
+            let workingEndpoint = null;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`https://baaijus.replit.app${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ username: 'testuser2', password: 'testpass' })
+                    });
+                    
+                    if (response.status !== 404) {
+                        result.innerHTML += `<br>✓ ${endpoint}: ${response.status} - ${response.statusText}`;
+                        if (response.ok) {
+                            workingEndpoint = endpoint;
+                            const data = await response.json();
+                            result.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        }
+                    } else {
+                        result.innerHTML += `<br>✗ ${endpoint}: 404 NOT FOUND`;
+                    }
+                } catch (error) {
+                    result.innerHTML += `<br>✗ ${endpoint}: ERROR - ${error.message}`;
+                }
+            }
+            
+            if (workingEndpoint) {
+                result.innerHTML += `<br><span class="success">FOUND WORKING ENDPOINT: ${workingEndpoint}</span>`;
+                window.workingEndpoint = workingEndpoint;
+            } else {
+                result.innerHTML += `<br><span class="error">NO WORKING ENDPOINTS FOUND</span>`;
+            }
+        }
+        
+        async function forceAuth() {
+            const result = document.getElementById('auth-result');
+            
+            if (!window.workingEndpoint) {
+                result.innerHTML = '<span class="error">Run STEP 1 first to find working endpoint</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`https://baaijus.replit.app${window.workingEndpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username: 'testuser2', password: 'testpass' })
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    localStorage.setItem('baaijus_user', JSON.stringify(user));
+                    localStorage.setItem('isLoggedIn', 'true');
+                    result.innerHTML = `<span class="success">✓ FORCED AUTH SUCCESS</span><pre>${JSON.stringify(user, null, 2)}</pre>`;
+                } else {
+                    result.innerHTML = `<span class="error">✗ AUTH FAILED: ${response.status}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ AUTH ERROR: ${error.message}</span>`;
+            }
+        }
+        
+        async function testBaajuses() {
+            const result = document.getElementById('baajuses-result');
+            
+            const baajusesEndpoints = [
+                '/api/baajuses',
+                '/api/ext/baajuses',
+                '/ext/baajuses'
+            ];
+            
+            for (const endpoint of baajusesEndpoints) {
+                try {
+                    const response = await fetch(`https://baaijus.replit.app${endpoint}`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        result.innerHTML = `<span class="success">✓ BAAJUSES WORKING: ${endpoint}</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        return;
+                    } else {
+                        result.innerHTML += `<br>✗ ${endpoint}: ${response.status}`;
+                    }
+                } catch (error) {
+                    result.innerHTML += `<br>✗ ${endpoint}: ${error.message}`;
+                }
+            }
+            
+            result.innerHTML += '<br><span class="error">NO WORKING BAAJUSES ENDPOINT</span>';
+        }
+    </script>
+</body>
+</html>
