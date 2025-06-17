@@ -17,6 +17,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', message: 'Extension can reach the API' });
   });
 
+  // Serve extension ZIP file
+  app.get('/baaijus-extension.zip', (req, res) => {
+    const zipPath = path.resolve(process.cwd(), 'baaijus-extension.zip');
+    if (fs.existsSync(zipPath)) {
+      res.download(zipPath, 'baaijus-extension.zip');
+    } else {
+      res.status(404).json({ error: 'Extension file not found' });
+    }
+  });
+
   // Extension API routes with different prefix to bypass Vite
   app.get('/ext/baajuses', isAuthenticated, async (req: any, res) => {
     console.log("✓ REACHED /ext/baajuses route handler");
