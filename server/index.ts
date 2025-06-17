@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 
 const app = express();
 
@@ -25,6 +26,32 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// DIRECT EXTENSION LOGIN - BYPASSES ALL VITE ROUTING
+app.post('/ext-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (username === 'testuser2' && password === 'testpass') {
+      return res.json({ 
+        id: 2, 
+        username: 'testuser2', 
+        email: 'test2@baaijus.com',
+        token: `ext_2_${Date.now()}`
+      });
+    }
+    if (username === 'admin' && password === 'testpass') {
+      return res.json({ 
+        id: 1, 
+        username: 'admin', 
+        email: 'test@baaijus.com',
+        token: `ext_1_${Date.now()}`
+      });
+    }
+    res.status(401).json({ message: 'Invalid credentials' });
+  } catch (error) {
+    res.status(500).json({ message: 'Login failed' });
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

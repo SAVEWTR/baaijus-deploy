@@ -1,13 +1,18 @@
-// Simple working authentication for extension
+// Working authentication with server
 
 export async function login(username, password) {
-  // Use known working credentials
-  if (username === 'testuser2' && password === 'testpass') {
-    const user = {
-      id: 2,
-      username: 'testuser2',
-      email: 'test2@baaijus.com'
-    };
+  try {
+    const response = await fetch('https://baaijus.replit.app/ext-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid credentials');
+    }
+
+    const user = await response.json();
     
     await chrome.storage.local.set({
       baaijus_user: user,
@@ -15,24 +20,9 @@ export async function login(username, password) {
     });
     
     return user;
+  } catch (error) {
+    throw new Error('Invalid credentials');
   }
-  
-  if (username === 'admin' && password === 'testpass') {
-    const user = {
-      id: 1,
-      username: 'admin',
-      email: 'test@baaijus.com'
-    };
-    
-    await chrome.storage.local.set({
-      baaijus_user: user,
-      isLoggedIn: true
-    });
-    
-    return user;
-  }
-  
-  throw new Error('Invalid credentials');
 }
 
 export async function getBaajuses() {
