@@ -42,7 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/ext/login', async (req, res) => {
+  // Working login endpoint that bypasses Vite
+  app.post('/login', async (req, res) => {
+    console.log("✓ REACHED /login route handler");
     try {
       const { username, password } = req.body;
 
@@ -61,10 +63,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      // Set session
+      (req.session as any).userId = user.id;
+
       res.json({ 
         id: user.id, 
         username: user.username, 
-        email: user.email
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl
       });
     } catch (error) {
       console.error("Login error:", error);
