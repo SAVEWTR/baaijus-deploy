@@ -17,9 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', message: 'Extension can reach the API' });
   });
 
-  // Working API endpoint that bypasses Vite issues
-  app.get('/api/extension/baajuses', isAuthenticated, async (req: any, res) => {
-    console.log("✓ REACHED /api/extension/baajuses route handler");
+  // Extension API routes with different prefix to bypass Vite
+  app.get('/ext/baajuses', isAuthenticated, async (req: any, res) => {
+    console.log("✓ REACHED /ext/baajuses route handler");
     try {
       const userId = req.user.id;
       console.log("✓ User ID:", userId);
@@ -29,6 +29,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("✗ Error fetching baaijuses:", error);
       res.status(500).json({ message: "Failed to fetch baaijuses" });
+    }
+  });
+  
+  app.post('/ext/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const bcrypt = await import("bcrypt");
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      res.json({ 
+        id: user.id, 
+        username: user.username, 
+        email: user.email
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
     }
   });
 
