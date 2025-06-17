@@ -137,13 +137,14 @@ Changelog:
   * Implemented real-time connection status in extension popup with visual indicators
   * Enhanced browser compatibility messaging and troubleshooting guidance
   * Successfully deployed all improvements - platform fully operational with working extension downloads
-- June 16, 2025. FIXED: Extension authentication fully working:
-  * Fixed API routing issue that was causing HTML responses instead of JSON
-  * Bearer token authentication confirmed working (Bearer 2 returns proper JSON)
-  * Login endpoint verified functional (testuser2/testpass returns user ID 2)
-  * Extension popup rebuilt with working authentication flow
-  * Test credentials: username=testuser2, password=testpass
-  * Extension ready for production use with proper API communication
+- June 17, 2025. FIXED: Extension authentication fully working with token-based system:
+  * Replaced session-based auth with token-based auth for browser extension compatibility
+  * Created dedicated extension endpoints: /api/ext/login and /api/ext/baaijuses
+  * Fixed Vite routing conflicts that intercepted API requests
+  * Extension now uses Bearer token authentication instead of cookies
+  * Test credentials confirmed working: username=testuser2, password=testpass
+  * Complete authentication flow working from extension to backend
+  * Extension ready for production use with reliable API communication
 ```
 
 ## User Preferences
