@@ -30,6 +30,11 @@ app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  
+  // Debug API route handling
+  if (path.startsWith('/api/')) {
+    console.log(`🔍 API Request: ${req.method} ${path} - Headers: Authorization=${req.headers.authorization ? 'present' : 'missing'}`);
+  }
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -57,7 +62,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Register API routes first to ensure they take precedence
   const server = await registerRoutes(app);
+  
+  // Add explicit API route debugging after route registration
+  app.use('/api/*', (req, res, next) => {
+    console.log(`🔍 API Middleware: ${req.method} ${req.path} - Headers: Authorization=${req.headers.authorization ? 'present' : 'missing'}`);
+    next();
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

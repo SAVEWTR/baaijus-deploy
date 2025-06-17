@@ -17,6 +17,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', message: 'Extension can reach the API' });
   });
 
+  // Working API endpoint that bypasses Vite issues
+  app.get('/api/extension/baajuses', isAuthenticated, async (req: any, res) => {
+    console.log("✓ REACHED /api/extension/baajuses route handler");
+    try {
+      const userId = req.user.id;
+      console.log("✓ User ID:", userId);
+      const baaijuses = await storage.getBaaijusesByUserId(userId);
+      console.log("✓ Found", baaijuses.length, "baaijuses");
+      res.json(baaijuses);
+    } catch (error) {
+      console.error("✗ Error fetching baaijuses:", error);
+      res.status(500).json({ message: "Failed to fetch baaijuses" });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -38,15 +53,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Baaijus routes
   app.get("/api/baaijuses", isAuthenticated, async (req: any, res) => {
-    console.log("API: Handling /api/baaijuses request");
+    console.log("✓ REACHED /api/baaijuses route handler");
     try {
       const userId = req.user.id;
-      console.log("API: User ID:", userId);
+      console.log("✓ User ID:", userId);
       const baaijuses = await storage.getBaaijusesByUserId(userId);
-      console.log("API: Found", baaijuses.length, "baaijuses");
+      console.log("✓ Found", baaijuses.length, "baaijuses");
       res.json(baaijuses);
     } catch (error) {
-      console.error("Error fetching baaijuses:", error);
+      console.error("✗ Error fetching baaijuses:", error);
       res.status(500).json({ message: "Failed to fetch baaijuses" });
     }
   });
