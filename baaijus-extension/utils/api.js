@@ -2,7 +2,7 @@
 
 async function getApiBase() {
   const { apiBase } = await chrome.storage.local.get(['apiBase']);
-  return apiBase || 'http://localhost:5000/api';
+  return apiBase || 'https://baaijus.replit.app/api';
 }
 
 export async function login(username, password) {
