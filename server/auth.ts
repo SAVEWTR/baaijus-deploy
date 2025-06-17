@@ -78,38 +78,49 @@ export async function setupAuth(app: Express) {
 
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
+    console.log("🔐 LOGIN REQUEST RECEIVED:", req.body);
     try {
       const { username, password } = req.body;
 
       if (!username || !password) {
+        console.log("❌ Missing credentials");
         return res.status(400).json({ message: "Username and password are required" });
       }
 
       // Find user
       const user = await storage.getUserByUsername(username);
       if (!user) {
+        console.log("❌ User not found:", username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      console.log("✓ User found:", user.username);
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
+        console.log("❌ Password mismatch for:", username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      console.log("✓ Password verified for:", username);
 
       // Set session
       (req.session as any).userId = user.id;
 
-      res.json({ 
+      const response = { 
         id: user.id, 
         username: user.username, 
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         profileImageUrl: user.profileImageUrl
-      });
+      };
+
+      console.log("✓ Login successful, sending response:", response);
+      res.json(response);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
       res.status(500).json({ message: "Login failed" });
     }
   });

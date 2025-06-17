@@ -32,6 +32,8 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
+      console.log("Frontend: Attempting login with", data);
+      
       const response = await fetch("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
@@ -41,12 +43,23 @@ export default function Login() {
         credentials: "include",
       });
       
+      console.log("Frontend: Response status", response.status);
+      console.log("Frontend: Response headers", Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
+        const errorText = await response.text();
+        console.log("Frontend: Error response", errorText);
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || "Login failed");
+        } catch {
+          throw new Error("Login failed - server error");
+        }
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log("Frontend: Login successful", result);
+      return result;
     },
     onSuccess: () => {
       toast({
