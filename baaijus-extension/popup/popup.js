@@ -29,7 +29,7 @@ class BaaijusPopup {
   showDashboard() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'flex';
-    this.loadBaajuses();
+    this.loadBaaijuses();
   }
 
   async handleLogin() {
@@ -65,7 +65,7 @@ class BaaijusPopup {
     }
   }
 
-  async loadBaajuses() {
+  async loadBaaijuses() {
     try {
       const { isLoggedIn } = await chrome.storage.local.get(['isLoggedIn']);
       
@@ -74,8 +74,8 @@ class BaaijusPopup {
         return;
       }
       
-      // Direct baajuses data - no imports needed
-      const baajuses = [
+      // Direct Baaijuses data - no imports needed
+      const baaijuses = [
         {
           id: 1,
           name: "Professional Content",
@@ -105,29 +105,29 @@ class BaaijusPopup {
         }
       ];
       
-      this.displayBaajuses(baajuses);
+      this.displayBaaijuses(baaijuses);
     } catch (error) {
-      console.error('Failed to load baajuses:', error);
+      console.error('Failed to load baaijuses:', error);
       this.showLogin();
     }
   }
 
-  displayBaajuses(baajuses) {
+  displayBaaijuses(baaijuses) {
     const container = document.getElementById('baajusList');
     container.innerHTML = '';
 
-    if (baajuses.length === 0) {
-      container.innerHTML = '<div style="color: #666; font-size: 12px;">No Baajuses found</div>';
+    if (baaijuses.length === 0) {
+      container.innerHTML = '<div style="color: #666; font-size: 12px;">No Baaijuses found</div>';
       return;
     }
 
-    baajuses.forEach(baajus => {
+    baaijuses.forEach(baaijus => {
       const item = document.createElement('div');
-      item.className = 'baajus-item';
+      item.className = 'baaijus-item';
       item.innerHTML = `
-        <div class="baajus-info">
-          <div class="baajus-name">${baajus.name}</div>
-          <div class="baajus-meta">${baajus.sensitivity} • ${baajus.usageCount || 0} uses</div>
+        <div class="baaijus-info">
+          <div class="baaijus-name">${baaijus.name}</div>
+          <div class="baaijus-meta">${baaijus.sensitivity} • ${baaijus.usageCount || 0} uses</div>
         </div>
       `;
       container.appendChild(item);
