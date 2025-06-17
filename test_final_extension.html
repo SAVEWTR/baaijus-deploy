@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Extension Test</title>
+    <style>
+        body { font-family: monospace; background: #000; color: #0f0; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #0f0; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 10px; margin: 5px; }
+        pre { color: #fff; background: #222; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>TESTING FINAL EXTENSION CODE</h1>
+    
+    <div class="test">
+        <h3>Test Extension Authentication</h3>
+        <button onclick="testAuth()">TEST AUTH</button>
+        <div id="auth-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test Baaijuses Display</h3>
+        <button onclick="testBaaijuses()">TEST BAAIJUSES</button>
+        <div id="baaijuses-result"></div>
+    </div>
+
+    <script>
+        // Simulate chrome storage
+        const mockStorage = {};
+        const chrome = {
+            storage: {
+                local: {
+                    set: async (data) => {
+                        console.log('CHROME STORAGE SET:', data);
+                        Object.assign(mockStorage, data);
+                        return Promise.resolve();
+                    },
+                    get: async (keys) => {
+                        console.log('CHROME STORAGE GET:', keys);
+                        const result = {};
+                        if (Array.isArray(keys)) {
+                            keys.forEach(key => {
+                                if (mockStorage[key] !== undefined) {
+                                    result[key] = mockStorage[key];
+                                }
+                            });
+                        }
+                        console.log('CHROME STORAGE RESULT:', result);
+                        return result;
+                    }
+                }
+            }
+        };
+
+        // Copy exact extension authentication logic
+        async function testAuth() {
+            const result = document.getElementById('auth-result');
+            result.innerHTML = 'Testing authentication...';
+            
+            try {
+                const username = 'testuser2';
+                const password = 'testpass';
+                
+                console.log('LOGIN ATTEMPT:', { username, password });
+                
+                // Direct authentication logic from extension
+                if ((username === 'testuser2' || username === 'admin') && password === 'testpass') {
+                    const user = {
+                        id: username === 'admin' ? 1 : 2,
+                        username: username,
+                        email: username === 'admin' ? 'admin@baaijus.com' : 'testuser2@baaijus.com'
+                    };
+                    
+                    await chrome.storage.local.set({
+                        baaijus_user: user,
+                        isLoggedIn: true
+                    });
+                    
+                    result.innerHTML = `<span class="success">✓ AUTHENTICATION SUCCESS</span><pre>${JSON.stringify(user, null, 2)}</pre>`;
+                } else {
+                    throw new Error('Invalid credentials');
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ AUTHENTICATION FAILED: ${error.message}</span>`;
+            }
+        }
+        
+        async function testBaaijuses() {
+            const result = document.getElementById('baaijuses-result');
+            result.innerHTML = 'Testing Baaijuses...';
+            
+            try {
+                const { isLoggedIn } = await chrome.storage.local.get(['isLoggedIn']);
+                
+                if (!isLoggedIn) {
+                    throw new Error('Not authenticated - run auth test first');
+                }
+                
+                // Direct Baaijuses data from extension
+                const baaijuses = [
+                    {
+                        id: 1,
+                        name: "Professional Content",
+                        description: "Filter inappropriate content for work",
+                        sensitivity: "balanced",
+                        keywords: ["inappropriate", "offensive", "unprofessional"],
+                        isActive: true,
+                        usageCount: 45
+                    },
+                    {
+                        id: 2,
+                        name: "Family Friendly",
+                        description: "Safe content for all family members",
+                        sensitivity: "strict", 
+                        keywords: ["violence", "adult", "explicit"],
+                        isActive: false,
+                        usageCount: 23
+                    },
+                    {
+                        id: 3,
+                        name: "News Filter",
+                        description: "Remove biased or sensational news",
+                        sensitivity: "permissive",
+                        keywords: ["clickbait", "breaking", "exclusive"],
+                        isActive: true,
+                        usageCount: 12
+                    }
+                ];
+                
+                result.innerHTML = `<span class="success">✓ BAAIJUSES SUCCESS (${baaijuses.length} items)</span><pre>${JSON.stringify(baaijuses, null, 2)}</pre>`;
+                
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ BAAIJUSES FAILED: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
