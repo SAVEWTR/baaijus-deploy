@@ -17,9 +17,6 @@
   "host_permissions": [
     "https://baaijus.replit.app/*"
   ],
-  "optional_permissions": [
-    "cookies"
-  ],
   "background": {
     "service_worker": "background.js"
   },
