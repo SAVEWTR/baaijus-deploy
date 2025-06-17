@@ -126,7 +126,15 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const userId = (req.session as any)?.userId;
+  let userId = (req.session as any)?.userId;
+
+  // Check for Bearer token if no session
+  if (!userId) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      userId = parseInt(authHeader.substring(7));
+    }
+  }
 
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
