@@ -8,34 +8,45 @@ async function getApiBase() {
 export async function login(username, password) {
   const apiBase = await getApiBase();
   
-  const response = await fetch(`${apiBase}/ext/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password })
-  });
+  console.log('Extension login attempt:', { username, apiBase });
+  
+  try {
+    const response = await fetch(`${apiBase}/ext/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password })
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    try {
-      const error = JSON.parse(errorText);
-      throw new Error(error.message || 'Login failed');
-    } catch {
-      throw new Error('Login failed');
+    console.log('Login response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('Login error response:', errorText);
+      try {
+        const error = JSON.parse(errorText);
+        throw new Error(error.message || 'Login failed');
+      } catch {
+        throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      }
     }
-  }
 
-  const user = await response.json();
-  
-  // Store token and user info for extension
-  await chrome.storage.local.set({
-    baaijus_user: user,
-    baaijus_token: user.token,
-    isLoggedIn: true
-  });
-  
-  return user;
+    const user = await response.json();
+    console.log('Login successful:', user);
+    
+    // Store token and user info for extension
+    await chrome.storage.local.set({
+      baaijus_user: user,
+      baaijus_token: user.token,
+      isLoggedIn: true
+    });
+    
+    return user;
+  } catch (error) {
+    console.error('Login fetch error:', error);
+    throw error;
+  }
 }
 
 export async function getBaajuses() {
