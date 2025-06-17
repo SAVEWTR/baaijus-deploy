@@ -3,20 +3,27 @@ function getStorage(keys) {
   return new Promise(resolve => chrome.storage.local.get(keys, resolve));
 }
 
+// Listen for messages from web app
+window.addEventListener('message', (event) => {
+  if (event.data?.type === 'BAAIJUS_WEB_PING') {
+    // Respond to web app that extension is active
+    window.postMessage({ type: 'BAAIJUS_EXTENSION_PONG' }, '*');
+  }
+});
+
 function sendMessage(message) {
   return new Promise(resolve => chrome.runtime.sendMessage(message, resolve));
 }
 
 async function applyFiltering() {
   try {
-    const { baaijus_token, active, selectedBaajus, apiBase } = await getStorage([
-      "baaijus_token", 
-      "active", 
-      "selectedBaajus", 
-      "apiBase"
+    const { baaijus_user, filtering_active, selectedBaajus } = await getStorage([
+      "baaijus_user", 
+      "filtering_active", 
+      "selectedBaajus"
     ]);
 
-    if (!active || !baaijus_token) {
+    if (!filtering_active || !baaijus_user) {
       return;
     }
 
@@ -25,9 +32,9 @@ async function applyFiltering() {
     // If no specific Baajus selected, fetch the first active one
     if (!baajusToUse) {
       try {
-        const response = await fetch(`${apiBase || 'https://baaijus-filter.replit.app/api'}/baajuses`, {
-          credentials: 'include',
+        const response = await fetch('https://baaijus.replit.app/api/baajuses', {
           headers: { 
+            'Authorization': `Bearer ${baaijus_user.id}`,
             'Content-Type': 'application/json'
           }
         });

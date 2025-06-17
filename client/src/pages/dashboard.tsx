@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Shield, Target, DollarSign, ArrowUp, Plus, Upload, Share2, BarChart3, Filter, Clock, Crown, Users, TrendingUp, Download, Activity, UserCheck, UserX } from "lucide-react";
+import { Brain, Shield, Target, DollarSign, ArrowUp, Plus, Upload, Share2, BarChart3, Filter, Clock, Crown, Users, TrendingUp, Download, Activity, UserCheck, UserX, Chrome } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useExtensionConnection } from "@/hooks/useExtensionConnection";
 import LiveDemo from "@/components/live-demo";
 import { useLocation } from "wouter";
 import { useState } from "react";
@@ -13,6 +14,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [viewMode, setViewMode] = useState<'user' | 'admin'>('user');
+  const { isConnected: extensionConnected, isChecking: extensionChecking } = useExtensionConnection();
 
   const isAdmin = user?.role === 'master_admin' || user?.role === 'admin';
 
