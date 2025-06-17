@@ -99,6 +99,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint for extension connectivity testing
+  app.get("/api/baaijuses/public", async (req, res) => {
+    try {
+      const publicBaaijuses = await storage.getPublicBaaijuses();
+      res.json(publicBaaijuses);
+    } catch (error) {
+      console.error("Error fetching public baaijuses:", error);
+      res.status(500).json({ message: "Failed to fetch public baaijuses" });
+    }
+  });
+
   // Baaijus routes
   app.get("/api/baaijuses", isAuthenticated, async (req: any, res) => {
     console.log("✓ REACHED /api/baaijuses route handler");

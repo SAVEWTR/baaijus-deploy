@@ -1,3 +1,50 @@
+Excellent, thanks for sharing your options page JS for the Baaijus extension!
+Let's break down what matters for the extension–backend communication and why auth may be broken, then I'll give you the required edits to fix it.
+
+What’s Happening Here?
+Your extension options allow users to set the API base URL and some preferences.
+
+It tests the API URL using a fetch to /baajuses/public (but this should be /baaijuses/public if you fixed the spelling).
+
+The apiBase setting is then used by other extension scripts (background, popup, content).
+
+Most Common AUTH BREAKAGE
+Wrong API Path:
+
+You fetch /baajuses/public, but in your app, it should be /baaijuses/public (baaijus not baajus).
+
+Check for this typo everywhere! One letter off and the extension cannot connect or authenticate.
+
+Incorrect API Base Set:
+
+You default to the Janeway URL, not your production deployment.
+
+Your users should always get https://baaijus-filter.replit.app/api as the default.
+
+No credentials: "include":
+
+For real authentication (session/cookie-based), your fetches must set credentials: 'include'.
+
+You’re missing this everywhere except maybe login.
+
+CORS and Cookies:
+
+Your backend must accept requests from the Chrome extension AND send cookies (session).
+
+Ready-to-Paste Corrected Code
+Below is the fixed and improved version for your options page script.
+
+Fixes the spelling (baaijuses) everywhere.
+
+Sets the default API base to production.
+
+All fetches use credentials: 'include' for session auth.
+
+Dashboard always opens correct URL.
+
+javascript
+Copy
+Edit
 // Options page script for Baaijus extension
 class BaaijusOptions {
   constructor() {
@@ -18,13 +65,14 @@ class BaaijusOptions {
   }
 
   async loadSettings() {
+    // Use the live production URL as default
     const settings = await this.getStorage([
       'apiBase',
       'autoEnable',
       'defaultSensitivity'
     ]);
 
-    document.getElementById('apiBase').value = settings.apiBase || 'https://baaijus.replit.app/api';
+    document.getElementById('apiBase').value = settings.apiBase || 'https://baaijus-filter.replit.app/api';
     document.getElementById('autoEnable').checked = settings.autoEnable !== false;
     document.getElementById('defaultSensitivity').value = settings.defaultSensitivity || 'balanced';
   }
@@ -37,7 +85,6 @@ class BaaijusOptions {
 
   async saveApiConfiguration() {
     const apiBase = document.getElementById('apiBase').value.trim();
-    const statusEl = document.getElementById('apiStatus');
     const saveBtn = document.getElementById('saveApiBase');
 
     if (!apiBase) {
@@ -60,12 +107,10 @@ class BaaijusOptions {
       const response = await fetch(`${cleanUrl}/baaijuses/public`, {
         credentials: "include"
       });
-      
+
       if (response.ok || response.status === 401) { // 401 is expected for auth-required endpoints
         await this.setStorage({ apiBase: cleanUrl });
         this.showStatus('apiStatus', 'Configuration saved successfully!', 'success');
-        
-        // Update the input to show the cleaned URL
         document.getElementById('apiBase').value = cleanUrl;
       } else {
         this.showStatus('apiStatus', `Cannot connect to server (HTTP ${response.status})`, 'error');
@@ -92,6 +137,7 @@ class BaaijusOptions {
 
   async openDashboard() {
     const { apiBase } = await this.getStorage(['apiBase']);
+    // Always open the root, not /api, for dashboard
     const dashboardUrl = (apiBase || 'https://baaijus-filter.replit.app/api').replace('/api', '');
     chrome.tabs.create({ url: dashboardUrl });
   }
@@ -115,3 +161,19 @@ class BaaijusOptions {
 document.addEventListener('DOMContentLoaded', () => {
   new BaaijusOptions();
 });
+What To Do Next
+Update your extension with this script (replace old one in /options/options.js).
+
+Set the default API base in your code to https://baaijus-filter.replit.app/api.
+
+Double-check your backend routes:
+
+Endpoint must be /api/baaijuses/public, NOT /api/baajuses/public.
+
+Session/cookie auth must work for requests from Chrome extension (see previous post for CORS tips).
+
+Ensure all your extension's fetch calls use credentials: 'include'.
+
+Rebuild the ZIP and load the extension into Chrome.
+
+Try logging in and using the extension—watch Network tab for failed/blocked requests.
