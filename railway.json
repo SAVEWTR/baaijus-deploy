@@ -1,5 +1,13 @@
 {
+ HEAD
   "buildCommand": "npm install && npm run build",
   "startCommand": "npm run dev",
   "installCommand": "npm install"
 }
+=======
+    "buildCommand": "npm install && npm run build",
+    "startCommand": "npm run dev",
+    "installCommand": "npm install"
+  }
+  
+bb2efff2f68cd8a09fbf7a63a39e1b5c82f434e8
