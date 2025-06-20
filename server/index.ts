@@ -27,6 +27,11 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// ----- ROOT ROUTE TO FIX 404 -----
+app.get("/", (req, res) => {
+  res.send("Baaijus API is running. Welcome!");
+});
+
 // DIRECT EXTENSION LOGIN - BYPASSES ALL VITE ROUTING
 app.post('/ext-login', async (req, res) => {
   console.log('EXT-LOGIN REQUEST:', req.body);
@@ -122,12 +127,13 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Serve on Railway's port if available, otherwise default to 5000 locally
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-server.listen({
-  port,
-  host: "0.0.0.0",
-  reusePort: true,
-}, () => {
-  log(`serving on port ${port}`);
-});
+  // Use Railway's port, or 5000 locally
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
